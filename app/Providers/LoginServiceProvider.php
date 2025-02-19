@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Services\LoginService;
 use Illuminate\Support\ServiceProvider;
 
 class LoginServiceProvider extends ServiceProvider
@@ -11,7 +12,9 @@ class LoginServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton('LoginService', function () {
+            return new LoginService();
+        });
     }
 
     /**
