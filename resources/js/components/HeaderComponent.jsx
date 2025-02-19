@@ -27,7 +27,7 @@ const HeaderComponent = () => {
         >
           <Link
             href='/login'
-            className="text-md font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2 rounded-full shadow-lg transform hover:scale-105 transition-all"
+            className="text-md font-semibold text-white bg-gradient-to-r from-gray-200 to-black px-5 py-2 rounded-full shadow-lg transform hover:scale-10 transition-all"
           >
             Login
           </Link>
