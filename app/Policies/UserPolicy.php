@@ -15,7 +15,7 @@ class UserPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasRole(RolesEnum::Director->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value);
     }
 
     /**
@@ -27,7 +27,7 @@ class UserPolicy
      */
     public function view(User $user, User $model)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->id === $model->id;
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->id === $model->id;
     }
 
     /**
@@ -39,7 +39,7 @@ class UserPolicy
      */
     public function update(User $user, User $model)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->id === $model->id;
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->id === $model->id;
     }
 
     /**
@@ -51,7 +51,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->id === $model->id;
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->id === $model->id;
     }
 
     /**
@@ -62,6 +62,6 @@ class UserPolicy
      */
     public function create(User $user)
     {
-        return $user->hasRole(RolesEnum::Director->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value);
     }
 }

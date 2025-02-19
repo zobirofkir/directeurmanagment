@@ -4,16 +4,18 @@ namespace App\Enums;
 
 enum RolesEnum: string
 {
-    case Director = 'director';
-    case Staff = 'staff';
-    case Professor = 'professor';
+    case Director = 'directeur';
+    case Staff = 'personnel';
+    case Professor = 'professeur';
+    case Secretary = 'secrétaire';
 
     public function label(): string
     {
         return match ($this) {
-            static::Director => 'Directors',
-            static::Staff => 'Staff',
-            static::Professor => 'Professors',
+            static::Director => 'Directeurs',
+            static::Staff => 'Personnel',
+            static::Professor => 'Professeurs',
+            static::Secretary => 'Secrétaires',
         };
     }
 }
