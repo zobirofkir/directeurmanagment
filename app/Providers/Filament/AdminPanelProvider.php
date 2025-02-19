@@ -2,10 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -16,6 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -52,5 +55,24 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot(): void
+    {
+        Filament::serving(function () {
+            Filament::registerRenderHook('user-menu.start', function () {
+                return view('filament.components.user-role', [
+                    'role' => Auth::user()?->roles->first()->name ?? 'Guest'
+                ]);
+            });
+
+            Filament::registerNavigationItems([
+                NavigationItem::make()
+                    ->label('Users Management')
+                    ->url(fn () => route('filament.admin.resources.users.index'))
+                    ->icon('heroicon-o-users')
+                    ->visible(fn () => Auth::user()?->can('view users')),
+            ]);
+        });
     }
 }
