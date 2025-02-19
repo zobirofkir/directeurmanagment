@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getCsrfToken, handleLoginRequest } from "../Utils/authUtils";
 
 const Login = ({ error }) => {
   const [login, setLogin] = useState("");
@@ -9,40 +10,12 @@ const Login = ({ error }) => {
   const [csrfToken, setCsrfToken] = useState("");
 
   useEffect(() => {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content;
-    setCsrfToken(token || "");
+    setCsrfToken(getCsrfToken());
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!csrfToken) {
-      toast.error("CSRF token is missing. Please refresh the page and try again.");
-      return;
-    }
-
-    try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-        },
-        body: JSON.stringify({ login, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        window.location.replace('/admin');
-      } else {
-        toast.error(data.error || "Login failed");
-      }
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
-    }
+    await handleLoginRequest(login, password, csrfToken);
   };
 
   useEffect(() => {
