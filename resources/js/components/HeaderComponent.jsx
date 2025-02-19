@@ -1,31 +1,39 @@
 import { Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 
 const HeaderComponent = () => {
-
   return (
-    <header className="bg-white shadow-sm w-full">
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <motion.header
+      className="bg-white shadow-lg w-full fixed top-0 z-50"
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-xl font-bold text-gray-800">
+        <motion.div
+          className="text-2xl font-extrabold text-gray-900 drop-shadow-lg"
+          whileHover={{ scale: 1.1 }}
+        >
           <Link href="/" className="hover:text-gray-600 transition-colors">
             Directeur System
           </Link>
-        </div>
+        </motion.div>
 
-
-        {/* Auth Buttons */}
-        <div
-          className={` lg:flex lg:items-center`}
+        {/* Auth Button */}
+        <motion.div
+          className="lg:flex lg:items-center"
+          whileHover={{ scale: 1.1 }}
         >
           <Link
             href='/login'
-            className="block py-2 lg:py-0 transition-colors font-bold text-md text-white bg-black py-1 px-3 rounded-full"
+            className="text-md font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2 rounded-full shadow-lg transform hover:scale-105 transition-all"
           >
             Login
           </Link>
-        </div>
+        </motion.div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
