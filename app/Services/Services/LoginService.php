@@ -35,10 +35,14 @@ class LoginService implements LoginConstructor
         $field = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
         if (Auth::attempt([$field => $credentials['login'], 'password' => $credentials['password']])) {
-            return redirect()->route('filament.admin.pages.dashboard');
+            return response()->json([
+                'success' => true,
+            ]);
         }
 
-        return inertia('Login', ['error' => 'Invalid credentials']);
+        return response()->json([
+            'error' => 'Invalid credentials',
+        ], 401); 
     }
 
     /**
