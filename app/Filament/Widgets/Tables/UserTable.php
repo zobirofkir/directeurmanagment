@@ -25,8 +25,7 @@ class UserTable extends BaseWidget
                 TextColumn::make('role')->label('Roles')->badge(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Create User')->url('/admin/users/create'),
-                Tables\Actions\ViewAction::make()->label('List User'),
+                Tables\Actions\CreateAction::make()->label('Create User')->url('/admin/users/create')
             ]);
     }
 

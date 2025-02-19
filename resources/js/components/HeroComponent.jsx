@@ -28,7 +28,7 @@ const HeroComponent = ({containerVariants, itemVariants, hoverVariants}) => {
             transition={{ delay: 0.6 }}
         >
             <motion.a
-            href="/signup"
+            href="/login"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -36,7 +36,7 @@ const HeroComponent = ({containerVariants, itemVariants, hoverVariants}) => {
             Get Started
             </motion.a>
             <motion.a
-            href="/features"
+            href="/login"
             className="bg-transparent border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-gray-900 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
