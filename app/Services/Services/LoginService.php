@@ -20,7 +20,7 @@ class LoginService implements LoginConstructor
      */
     public function index()
     {
-        return inertia('Login');
+        return inertia('Home');
     }
 
     /**
@@ -42,7 +42,7 @@ class LoginService implements LoginConstructor
 
         return response()->json([
             'error' => 'Invalid credentials',
-        ], 401); 
+        ], 401);
     }
 
     /**

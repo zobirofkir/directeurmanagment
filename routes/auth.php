@@ -3,6 +3,14 @@
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * Index Route
+ */
+Route::get('/', [LoginController::class, 'index'])->name('index');
+
+/**
+ * Login Route
+ */
 Route::get('/login', [LoginController::class, 'index'])->name('index');
 
 /**
