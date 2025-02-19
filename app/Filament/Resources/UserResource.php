@@ -30,20 +30,24 @@ class UserResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
+                    ->label('Nom')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 TextInput::make('email')
+                    ->label('E-mail')
                     ->email()
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 TextInput::make('password')
+                    ->label('Mot de passe')
                     ->password()
                     ->dehydrateStateUsing(fn ($state) => bcrypt($state))
                     ->required()
                     ->visible(fn ($record) => !$record || !$record->password),
                 Select::make('roles')
+                    ->label('Rôles')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
@@ -56,17 +60,21 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nom')
                     ->searchable(),
                 TextColumn::make('email')
+                    ->label('E-mail')
                     ->searchable(),
                 TextColumn::make('roles.name')
-                    ->label('Roles')
+                    ->label('Rôles')
                     ->badge(),
                 TextColumn::make('created_at')
+                    ->label('Date de création')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Date de mise à jour')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -75,11 +83,11 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Modifier'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()->label('Supprimer'),
                 ]),
             ]);
     }

@@ -20,18 +20,17 @@ class UserTable extends BaseWidget
                 User::query()
             )
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('email'),
-                TextColumn::make('role')->label('Roles')->badge(),
+                TextColumn::make('name')->label('Nom'),
+                TextColumn::make('email')->label('E-mail'),
+                TextColumn::make('role')->label('Rôles')->badge(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('Create User')->url('/admin/users/create')
+                Tables\Actions\CreateAction::make()->label('Créer un utilisateur')->url('/admin/users/create')
             ]);
     }
 
     public static function canView(): bool
     {
-        // Check if the authenticated user has the 'director' role
         return Auth::user()->role === 'director';
     }
 }
