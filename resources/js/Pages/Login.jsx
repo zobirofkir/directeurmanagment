@@ -28,7 +28,7 @@ const Login = ({ error }) => {
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white p-8 rounded-2xl shadow-lg w-[500px] h-[400px] flex flex-col items-center"
+        className="bg-white p-8 rounded-2xl shadow-lg w-[500px] h-[300px] flex flex-col items-center"
       >
         <h2 className="text-gray-800 text-3xl font-bold mb-6">Login</h2>
         <form onSubmit={handleLogin} className="space-y-6">
