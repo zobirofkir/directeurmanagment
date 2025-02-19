@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
 {
@@ -58,6 +59,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(User::query()->where('id', '!=', Auth::id()))
             ->columns([
                 TextColumn::make('name')
                     ->label('Nom')
