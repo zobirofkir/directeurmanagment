@@ -72,6 +72,12 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn () => route('filament.admin.resources.users.index'))
                     ->icon('heroicon-o-users')
                     ->visible(fn () => Auth::user()?->can('view users')),
+
+                NavigationItem::make()
+                    ->label('Employees')
+                    ->url(fn () => route('filament.admin.resources.employees.index'))
+                    ->icon('heroicon-o-user-group')
+                    ->visible(fn () => Auth::user()?->can('viewAny', Employee::class)),
             ]);
         });
     }

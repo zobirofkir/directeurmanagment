@@ -13,8 +13,8 @@ use Filament\Tables\Columns\{TextColumn, DateColumn};
 class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
+    
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Gestion des employés';
 
     public static function form(Forms\Form $form): Forms\Form
     {
