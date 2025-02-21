@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Models\Document;
+use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -20,7 +21,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Auth\Events\Login;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -86,6 +89,11 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-user-group')
                     ->visible(fn () => Auth::user()?->can('viewAny', Document::class)),
             ]);
+        });
+
+        Event::listen(Login::class, function ($event) {
+            $user = $event->user;
+            $user->update(['is_active' => true]);
         });
     }
 }
