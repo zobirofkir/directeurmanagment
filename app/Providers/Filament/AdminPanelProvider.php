@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Document;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -78,6 +79,12 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn () => route('filament.admin.resources.employees.index'))
                     ->icon('heroicon-o-user-group')
                     ->visible(fn () => Auth::user()?->can('viewAny', Employee::class)),
+
+                NavigationItem::make()
+                    ->label('Documents')
+                    ->url(fn () => route('filament.admin.resources.documents.index'))
+                    ->icon('heroicon-o-user-group')
+                    ->visible(fn () => Auth::user()?->can('viewAny', Document::class)),
             ]);
         });
     }

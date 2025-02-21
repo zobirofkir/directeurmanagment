@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Document;
 use App\Models\Employee;
 use App\Models\User;
+use App\Policies\DocumentPolicy;
 use App\Policies\EmployeePolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -26,5 +28,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Employee::class, EmployeePolicy::class);
+        Gate::policy(Document::class, DocumentPolicy::class);
     }
 }
