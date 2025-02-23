@@ -8,7 +8,7 @@
             let calendarEl = document.getElementById('calendar');
             let calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                events: @json($this->events),
+                events: @json($events), // Pass the events from the view data
             });
             calendar.render();
         });

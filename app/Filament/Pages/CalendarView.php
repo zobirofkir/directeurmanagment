@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class CalendarView extends Page
 {
-    protected static string $resource = EventResource::class; // ✅ تحديد المورد المرتبط بالصفحة
+    protected static string $resource = EventResource::class;
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static string $view = 'filament.pages.calendar-view';
 
@@ -21,5 +21,11 @@ class CalendarView extends Page
             ->get(['id', 'title', 'start_time as start', 'end_time as end', 'type'])
             ->toArray();
     }
-}
 
+    public function getViewData(): array
+    {
+        return [
+            'events' => $this->events,
+        ];
+    }
+}
