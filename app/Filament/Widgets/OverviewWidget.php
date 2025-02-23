@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Project;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -34,6 +35,10 @@ class OverviewWidget extends BaseWidget
                 ->description('Utilisateurs en attente d\'approbation')
                 ->color('danger')
                 ->icon('heroicon-o-clock'),
+
+            Stat::make('Projects', Project::count())
+                ->description('Projects')
+                ->color('success'),
         ];
     }
 
