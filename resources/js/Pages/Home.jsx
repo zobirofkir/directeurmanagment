@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getCsrfToken, handleLoginRequest } from "../Utils/authUtils";
 import Layout from "@/Layouts/Layout";
 import Logo from '../assets/images/logo.png';
+import { Head } from "@inertiajs/react";
 
 const Home = ({ error }) => {
   const [login, setLogin] = useState("");
@@ -26,6 +27,7 @@ const Home = ({ error }) => {
 
   return (
     <Layout>
+        <Head title="login"/>
       <div className="flex flex-col md:flex-row justify-center items-center h-screen bg-gray-100 p-4">
         <ToastContainer />
         <motion.div
