@@ -1,31 +1,37 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Resources\EventResource\Pages;
 
-use App\Filament\Resources\EventResource;
 use Filament\Resources\Pages\Page;
+use App\Filament\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 
 class CalendarView extends Page
 {
     protected static string $resource = EventResource::class;
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
-    protected static string $view = 'filament.pages.calendar-view';
 
-    public array $events = [];
+    protected static string $view = 'filament.resources.events.view-event';
+
+    public Event $event;
 
     public function mount()
     {
-        $this->events = Event::where('user_id', Auth::id())
-            ->get(['id', 'title', 'start_time as start', 'end_time as end', 'type'])
-            ->toArray();
+        $recordId = request()->query('record');
+
+        if (!$recordId) {
+            abort(404);
+        }
+
+        $this->event = Event::where('id', $recordId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
     }
 
     public function getViewData(): array
     {
         return [
-            'events' => $this->events,
+            'event' => $this->event,
         ];
     }
 }

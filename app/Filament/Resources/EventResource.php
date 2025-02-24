@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Pages\CalendarView;
 use App\Filament\Resources\EventResource\Pages;
+use App\Filament\Resources\EventResource\Pages\CalendarView;
 use App\Filament\Resources\EventResource\RelationManagers;
 use App\Models\Event;
 use Filament\Forms;
@@ -68,11 +68,11 @@ class EventResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('visit_calendar')
-                    ->label('View Calendar')
-                    ->icon('heroicon-o-calendar')
-                    ->url(fn () => route('filament.admin.resources.events.calendar'))
-                    ->openUrlInNewTab(),
-            ])
+                        ->label('View Calendar')
+                        ->icon('heroicon-o-calendar')
+                        ->url(fn ($record) => route('filament.admin.resources.events.calendar', ['record' => $record->id]))
+                        ->openUrlInNewTab(),
+                ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
