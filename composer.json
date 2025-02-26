@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.9",
         "setasign/fpdi": "^2.6",
         "spatie/laravel-permission": "^6.15",
+        "spatie/pdf-to-image": "^1.2",
         "tecnickcom/tcpdf": "^6.8",
         "tightenco/ziggy": "^2.0"
     },

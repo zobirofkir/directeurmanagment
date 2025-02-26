@@ -3,157 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signer le Document</title>
+    <title>Signature du document</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
-        /* General body styles */
-        body {
-            font-family: 'Arial', sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #f4f7fc;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
 
-        /* Container for the signature form */
-        .container {
-            width: 80%;
-            max-width: 800px;
+        body {
+            background-color: #f4f4f9;
+            direction: rtl;
             padding: 20px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            color: #333;
         }
 
         h1 {
-            font-size: 2rem;
-            color: #333;
+            text-align: center;
             margin-bottom: 20px;
+            color: #4CAF50;
         }
 
-        /* Alert box styles */
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-size: 1rem;
+        iframe {
+            display: block;
+            margin: 0 auto 20px;
+            border: none;
+            max-width: 100%;
+            height: 500px;
         }
 
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        /* Canvas style */
-        #signature-pad {
-            border: 2px solid #ddd;
-            border-radius: 5px;
+        .form-container {
             background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #signature-pad-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 20px;
         }
 
-        /* Button styles */
-        button {
-            background-color: #007bff;
-            color: white;
+        #signature-pad {
+            border: 2px solid #000;
+            width: 100%;
+            height: 250px;
+            border-radius: 8px;
+            background-color: #fff;
+            touch-action: none;
+        }
+
+        .clear-button {
+            background-color: #ff4d4d;
+            color: #fff;
             border: none;
             padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
+            margin-top: 10px;
             border-radius: 5px;
-            margin: 5px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
+        .clear-button:hover {
+            background-color: #e60000;
         }
 
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
-        /* Responsive design */
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5rem;
+            iframe {
+                height: 400px;
             }
-            .container {
-                width: 95%;
+
+            #signature-pad {
+                height: 150px;
+            }
+
+            .form-container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            button[type="submit"] {
+                font-size: 14px;
             }
         }
-
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Signer le Document : {{ $document->title }}</h1>
-
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
+    <h1>Signature du document : {{ $document->title }}</h1>
+    <iframe src="{{ Storage::url($document->file_path) }}" width="100%" height="500px"></iframe>
+    <form action="{{ route('document.download.signed', $document) }}" method="POST">
+        @csrf
+        <div class="form-container">
+            <div id="signature-pad-container">
+                <canvas id="signature-pad"></canvas>
+                <button type="button" id="clear-button" class="clear-button">Effacer la signature</button>
             </div>
-        @endif
+            <input type="hidden" id="signature" name="signature">
+            <button type="submit">Télécharger le document signé</button>
+        </div>
+    </form>
 
-        <canvas id="signature-pad" width="400" height="200"></canvas>
-        <br>
-        <button id="clear">Effacer</button>
-        <button id="save">Enregistrer la Signature</button>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script>
         const canvas = document.getElementById('signature-pad');
-        const signaturePad = new SignaturePad(canvas);
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)',
+            minWidth: 0.5,
+            maxWidth: 2.5,
+            throttle: 16,
+            velocityFilterWeight: 0.7,
+        });
 
-        document.getElementById('clear').addEventListener('click', () => {
+        document.getElementById('clear-button').addEventListener('click', () => {
             signaturePad.clear();
         });
 
-        document.getElementById('save').addEventListener('click', async () => {
+        document.querySelector('form').addEventListener('submit', (event) => {
+            const signatureInput = document.getElementById('signature');
             if (signaturePad.isEmpty()) {
-                alert('Veuillez fournir votre signature.');
-                return;
-            }
-
-            const signature = signaturePad.toDataURL("image/png");
-
-            try {
-                const response = await fetch("{{ route('document.download.signed', $document) }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({ signature })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Échec du téléchargement du document signé.');
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "document_signe.pdf";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error("Erreur :", error);
-                alert(error.message);
+                alert('Veuillez ajouter une signature d\'abord.');
+                event.preventDefault();
+            } else {
+                signatureInput.value = signaturePad.toDataURL();
             }
         });
     </script>
