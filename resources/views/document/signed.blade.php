@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Signé</title>
+    <title>Document signé</title>
     <style>
         @font-face {
             font-family: 'Amiri';
@@ -11,8 +11,8 @@
             font-weight: 400;
         }
         body {
-            font-family: 'Amiri', sans-serif; /* Utilisation de la police */
-            direction: ltr; /* Direction du texte de gauche à droite */
+            font-family: 'Amiri', sans-serif;
+            direction: rtl;
         }
         .document-container {
             margin-bottom: 20px;
@@ -28,13 +28,21 @@
     </style>
 </head>
 <body>
-    <h1>Document Signé : {{ $document->title }}</h1>
+    <h1>Document signé : {{ $document->title }}</h1>
     <div class="document-container">
-        <iframe src="{{ Storage::disk('local')->url($document->file_path) }}" width="100%" height="500px"></iframe>
+        @if(Storage::exists($document->file_path))
+            <iframe src="{{ Storage::url($document->file_path) }}" width="100%" height="500px"></iframe>
+        @else
+            <p>Le document n'est pas disponible.</p>
+        @endif
     </div>
     <div class="signature-container">
         <h2>Signature :</h2>
-        <img src="{{ $signature }}" alt="Signature">
+        @if($signature && Storage::exists($signature))
+            <img src="{{ Storage::url($signature) }}" alt="Signature">
+        @else
+            <p>La signature n'est pas disponible.</p>
+        @endif
     </div>
 </body>
 </html>
