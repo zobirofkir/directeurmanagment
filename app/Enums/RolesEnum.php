@@ -8,6 +8,7 @@ enum RolesEnum: string
     case Staff = 'personnel';
     case Professor = 'professeur';
     case Secretary = 'secrétaire';
+    case SecretaryGeneral = 'secrétaire generale';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum RolesEnum: string
             static::Staff => 'Personnel',
             static::Professor => 'Professeurs',
             static::Secretary => 'Secrétaires',
+            static::SecretaryGeneral => 'secrétaire generale',
         };
     }
 }
