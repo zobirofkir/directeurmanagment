@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signed Document</title>
+    <title>Document Signé</title>
     <style>
         body {
-            font-family: 'Helvetica', sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             padding: 20px;
             color: #333;
         }
@@ -32,15 +32,16 @@
 <body>
     @foreach($pages as $page)
         <div class="page">
-            <img src="{{ $page }}" alt="Page {{ $loop->iteration }}">
+            <img src="file://{{ $page }}" alt="Page {{ $loop->iteration }}">
         </div>
     @endforeach
+
     <div class="signature-container">
         <h2>Signature:</h2>
         @if($signature)
             <img src="{{ $signature }}" alt="Signature">
         @else
-            <p>No signature available.</p>
+            <p>Aucune signature disponible.</p>
         @endif
     </div>
 </body>

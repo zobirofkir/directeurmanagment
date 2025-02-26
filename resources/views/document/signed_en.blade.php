@@ -32,7 +32,7 @@
 <body>
     @foreach($pages as $page)
         <div class="page">
-            <img src="{{ $page }}" alt="Page {{ $loop->iteration }}">
+            <img src="file://{{ $page }}" alt="Page {{ $loop->iteration }}">
         </div>
     @endforeach
     <div class="signature-container">

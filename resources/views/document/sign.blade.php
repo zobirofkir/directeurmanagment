@@ -91,6 +91,21 @@
             background-color: #45a049;
         }
 
+        .language-select {
+            margin-bottom: 20px;
+        }
+
+        .language-select label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .language-select select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
         @media (max-width: 600px) {
             iframe {
                 height: 400px;
@@ -117,6 +132,14 @@
     <form action="{{ route('document.download.signed', $document) }}" method="POST">
         @csrf
         <div class="form-container">
+            <div class="language-select">
+                <label for="language">Langue du document :</label>
+                <select id="language" name="language">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
             <div id="signature-pad-container">
                 <canvas id="signature-pad"></canvas>
                 <button type="button" id="clear-button" class="clear-button">Effacer la signature</button>

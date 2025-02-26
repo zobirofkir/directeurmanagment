@@ -18,30 +18,50 @@ class DocumentController extends Controller
     public function downloadSignedDocument(Document $document, Request $request)
     {
         $signature = $request->input('signature');
+        $language = $request->input('language', 'en');
+
         $filePath = Storage::disk('public')->path($document->file_path);
         $tempDir = storage_path('app/public/temp');
         if (!file_exists($tempDir)) {
             mkdir($tempDir, 0777, true);
         }
+
         $pdfToImage = new PdfToImage($filePath);
         $pages = [];
         for ($i = 1; $i <= $pdfToImage->getNumberOfPages(); $i++) {
             $imagePath = storage_path('app/public/temp/page_' . $i . '.jpg');
             $pdfToImage->setPage($i)->saveImage($imagePath);
-            $pages[] = Storage::disk('public')->url('temp/page_' . $i . '.jpg');
+            $pages[] = $imagePath; // Store absolute file paths instead of URLs
         }
-        $pdf = DomPDF::loadView('document.signed', [
+
+        $viewName = 'document.signed_' . $language;
+        $pdf = DomPDF::loadView($viewName, [
             'document' => $document,
             'signature' => $signature,
             'pages' => $pages,
         ]);
-        $response = $pdf->download('signed_document.pdf');
+
+        switch ($language) {
+            case 'ar':
+                $pdf->setOption('defaultFont', 'Amiri');
+                break;
+            case 'fr':
+                $pdf->setOption('defaultFont', 'DejaVu Sans');
+                break;
+            case 'en':
+            default:
+                $pdf->setOption('defaultFont', 'Helvetica');
+                break;
+        }
+
+        $response = $pdf->download('signed_document_' . $language . '.pdf');
+
         foreach ($pages as $page) {
-            $imagePath = storage_path('app/public/temp/page_' . $i . '.jpg');
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
+            if (file_exists($page)) {
+                unlink($page);
             }
         }
+
         return $response;
     }
 }
