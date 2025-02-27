@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('career_path')->nullable();
             $table->string('contract_type');
             $table->string('degree')->nullable();
+            $table->string('phone');
+            $table->string('date');
             $table->timestamps();
         });
     }

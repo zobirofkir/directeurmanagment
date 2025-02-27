@@ -42,7 +42,12 @@ class EmployeeResource extends Resource
                     ->label('Type de contrat'),
                 TextInput::make('degree')
                     ->label('Diplôme'),
-            ])->columns(1);
+                TextInput::make('Phone')
+                    ->label('Phone'),
+                TextInput::make('date')
+                    ->label('date de naissance'),
+
+        ])->columns(1);
     }
 
     public static function table(Tables\Table $table): Tables\Table

@@ -17,6 +17,8 @@ class Employee extends Model
         'career_path',
         'contract_type',
         'degree',
+        'phone',
+        'date'
     ];
 
     public function user()
