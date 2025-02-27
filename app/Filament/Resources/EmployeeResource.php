@@ -42,7 +42,7 @@ class EmployeeResource extends Resource
                     ->label('Type de contrat'),
                 TextInput::make('degree')
                     ->label('Diplôme'),
-                TextInput::make('Phone')
+                TextInput::make('phone')
                     ->label('Phone'),
                 TextInput::make('date')
                     ->label('date de naissance'),
