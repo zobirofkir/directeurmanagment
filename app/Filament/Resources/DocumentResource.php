@@ -2,20 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\RolesEnum;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Filament\Resources\DocumentResource\RelationManagers;
+use App\Mail\DocumentCreated;
 use App\Models\Document;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentResource extends Resource
@@ -69,6 +74,21 @@ class DocumentResource extends Resource
                     ->label('Signer')
                     ->url(fn (Document $record) => route('document.sign', $record))
                     ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('send_email')
+                    ->label('Envoyer Email')
+                    ->color('success')
+                    ->action(function (Document $record) {
+                        $users = User::role(RolesEnum::Director->value)->orWhere('role', RolesEnum::Secretary->value)->orWhere('role', RolesEnum::SecretaryGeneral->value)->get();
+
+                        foreach ($users as $user) {
+                            Mail::to($user->email)->send(new DocumentCreated($record));
+                        }
+                        Notification::make()
+                        ->title('Email Sent Successfully')
+                        ->success()
+                        ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
