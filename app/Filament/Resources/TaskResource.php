@@ -52,11 +52,11 @@ class TaskResource extends Resource
                     ->maxLength(255)
                     ->label('Meeting Link'),
                 Select::make('project_id')
-                    ->options(Project::where('user_id', Auth::user()->id)->pluck('name', 'id'))
+                    ->options(Project::where('user_id', Auth::id())->pluck('name', 'id'))
                     ->required()
                     ->label('Project'),
                 Hidden::make('user_id')
-                    ->default(Auth::user()->id),
+                    ->default(Auth::id()),
             ])
             ->columns(1);
     }
@@ -64,7 +64,7 @@ class TaskResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Task::query()->where('user_id', '=', Auth::id()))
+            ->query(Task::query()->where('user_id', Auth::id()))
             ->columns([
                 TextColumn::make('title')
                     ->searchable()
@@ -92,15 +92,17 @@ class TaskResource extends Resource
                         'Done' => 'Done',
                     ]),
                 Tables\Filters\SelectFilter::make('project_id')
-                    ->options(Project::where('user_id', Auth::user()->id)->pluck('name', 'id'))
+                    ->options(Project::where('user_id', Auth::id())->pluck('name', 'id'))
                     ->label('Project'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('download')
-                    ->label('Overir')
+                Tables\Actions\Action::make('open')
+                    ->label('Open')
                     ->url(fn (Task $record) => url($record->meeting_link))
                     ->openUrlInNewTab(),
+                Tables\Actions\ViewAction::make()
+                    ->url(fn (Task $record) => TaskResource::getUrl('view', ['record' => $record])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -122,6 +124,7 @@ class TaskResource extends Resource
             'index' => Pages\ListTasks::route('/'),
             'create' => Pages\CreateTask::route('/create'),
             'edit' => Pages\EditTask::route('/{record}/edit'),
+            'view' => Pages\ViewTask::route('/{record}'),
         ];
     }
 }
