@@ -31,7 +31,7 @@ class DocumentController extends Controller
         for ($i = 1; $i <= $pdfToImage->getNumberOfPages(); $i++) {
             $imagePath = storage_path('app/public/temp/page_' . $i . '.jpg');
             $pdfToImage->setPage($i)->saveImage($imagePath);
-            $pages[] = $imagePath; // Store absolute file paths instead of URLs
+            $pages[] = $imagePath;
         }
 
         $viewName = 'document.signed_' . $language;
@@ -62,6 +62,9 @@ class DocumentController extends Controller
             }
         }
 
+        $document->delete();
+
         return $response;
     }
+
 }
