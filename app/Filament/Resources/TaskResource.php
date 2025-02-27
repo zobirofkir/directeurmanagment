@@ -18,7 +18,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 
 class TaskResource extends Resource
@@ -34,58 +33,74 @@ class TaskResource extends Resource
                 TextInput::make('title')
                     ->required()
                     ->maxLength(255)
-                    ->label('Titre'),
+                    ->label('Title'),
                 Textarea::make('description')
                     ->columnSpanFull()
                     ->label('Description'),
                 Select::make('status')
                     ->options([
-                        'To Do' => 'À faire',
-                        'In Progress' => 'En cours',
-                        'Done' => 'Terminé',
+                        'To Do' => 'To Do',
+                        'In Progress' => 'In Progress',
+                        'Done' => 'Done',
                     ])
                     ->required()
-                    ->label('Statut'),
+                    ->label('Status'),
                 DatePicker::make('deadline')
                     ->required()
-                    ->label('Date limite'),
+                    ->label('Deadline'),
                 TextInput::make('meeting_link')
                     ->maxLength(255)
-                    ->label('Lien de réunion'),
+                    ->label('Meeting Link'),
                 Select::make('project_id')
                     ->options(Project::where('user_id', Auth::user()->id)->pluck('name', 'id'))
                     ->required()
-                    ->label('Projet'),
-
+                    ->label('Project'),
                 Hidden::make('user_id')
                     ->default(Auth::user()->id),
-            ])->columns(1);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-        ->query(Task::query()->where('user_id', '=', Auth::id()))
-
+            ->query(Task::query()->where('user_id', '=', Auth::id()))
             ->columns([
                 TextColumn::make('title')
                     ->searchable()
-                    ->label('Titre'),
-                TextColumn::make('status')->badge('success')
-                    ->label('Statut'),
+                    ->label('Title'),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'To Do' => 'gray',
+                        'In Progress' => 'warning',
+                        'Done' => 'success',
+                    })
+                    ->label('Status'),
                 TextColumn::make('deadline')
                     ->date()
                     ->sortable()
-                    ->label('Date limite'),
-                TextColumn::make('meeting_link')
-                    ->searchable()
-                    ->label('Lien de réunion'),
+                    ->label('Deadline'),
+                TextColumn::make('project.name')
+                    ->label('Project'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'To Do' => 'To Do',
+                        'In Progress' => 'In Progress',
+                        'Done' => 'Done',
+                    ]),
+                Tables\Filters\SelectFilter::make('project_id')
+                    ->options(Project::where('user_id', Auth::user()->id)->pluck('name', 'id'))
+                    ->label('Project'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('download')
+                    ->label('Overir')
+                    ->url(fn (Task $record) => url($record->meeting_link))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -97,7 +112,7 @@ class TaskResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // No additional relations since we're limited to the fillable fields
         ];
     }
 
