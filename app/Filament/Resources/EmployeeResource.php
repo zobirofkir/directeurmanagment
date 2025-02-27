@@ -16,7 +16,6 @@ class EmployeeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form
