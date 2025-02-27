@@ -35,7 +35,8 @@ class UserTable extends BaseWidget
     {
         $directorRole = Role::firstOrCreate(['name' => RolesEnum::Director->value]);
         $secretaryRole = Role::firstOrCreate(['name' => RolesEnum::Secretary->value]);
+        $secretaryGenerale = Role::firstOrCreate(['name' => RolesEnum::SecretaryGeneral->value]);
 
-        return Auth::user()->hasRole($directorRole) || Auth::user()->hasRole($secretaryRole);
+        return Auth::user()->hasRole($directorRole) || Auth::user()->hasRole($secretaryRole) || Auth::user()->hasRole($secretaryGenerale);
     }
 }
