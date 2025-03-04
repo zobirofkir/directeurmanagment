@@ -17,6 +17,14 @@ class OverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         $stats = [
+
+            Stat::make('Chat ✨', 'Chat 🗨️')
+                ->description('Chat 📲')
+                ->color('success')
+                ->icon('heroicon-o-cog')
+                ->extraAttributes(['style' => 'text-align: center;'])
+                ->url(url('admin/chats')),
+
             Stat::make('Utilisateurs Totals', User::count())
                 ->description('Nombre total d\'utilisateurs')
                 ->color('success')
