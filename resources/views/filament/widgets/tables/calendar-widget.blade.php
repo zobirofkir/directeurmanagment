@@ -1,23 +1,23 @@
 <x-filament-widgets::widget>
     <x-filament::section>
-        {{-- Widget content --}}
+        {{-- Contenu du widget --}}
         <div id="calendar" class="calendar-container">
-            <h3 class="calendar-title">March 2025</h3>
+            <h3 class="calendar-title">Mars 2025</h3>
             <div class="calendar-table">
                 <table>
                     <thead>
                         <tr>
-                            <th>Sun</th>
-                            <th>Mon</th>
-                            <th>Tue</th>
-                            <th>Wed</th>
-                            <th>Thu</th>
-                            <th>Fri</th>
-                            <th>Sat</th>
+                            <th>Dim</th>
+                            <th>Lun</th>
+                            <th>Mar</th>
+                            <th>Mer</th>
+                            <th>Jeu</th>
+                            <th>Ven</th>
+                            <th>Sam</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Dynamically Generate Days --}}
+                        {{-- Génération dynamique des jours --}}
                         @php
                             $firstDayOfMonth = \Carbon\Carbon::create(2025, 3, 1)->startOfMonth()->dayOfWeek;
                             $daysInMonth = \Carbon\Carbon::create(2025, 3, 1)->daysInMonth;
@@ -33,7 +33,7 @@
                                         <td class="calendar-day">
                                             <span>{{ $currentDay }}</span>
 
-                                            {{-- Display events and documents for the day --}}
+                                            {{-- Affichage des événements et documents pour ce jour --}}
                                             @php
                                                 $events = App\Models\Event::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
                                                 $documents = App\Models\Document::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))
@@ -120,7 +120,7 @@
             right: 5px;
         }
 
-        /* Dark Mode */
+        /* Mode sombre */
         @media (prefers-color-scheme: dark) {
             :root {
                 --calendar-bg: #1a1a1a;
@@ -132,7 +132,7 @@
             }
         }
 
-        /* Light Mode */
+        /* Mode clair */
         @media (prefers-color-scheme: light) {
             :root {
                 --calendar-bg: #ffffff;
@@ -144,7 +144,7 @@
             }
         }
 
-        /* Responsiveness */
+        /* Responsivité */
         @media (max-width: 768px) {
             table {
                 font-size: 12px;
