@@ -68,8 +68,6 @@
         .calendar-container {
             max-width: 100%;
             padding: 20px;
-            background-color: var(--calendar-bg);
-            color: var(--calendar-text);
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -96,9 +94,7 @@
             vertical-align: top;
         }
         th {
-            background-color: var(--calendar-header-bg);
             font-weight: bold;
-            color: var(--calendar-header-text);
         }
         .calendar-day {
             position: relative;
