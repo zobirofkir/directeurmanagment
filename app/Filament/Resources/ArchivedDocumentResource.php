@@ -48,6 +48,11 @@ class ArchivedDocumentResource extends Resource
                     ->label('Télécharger')
                     ->url(fn (Document $record) => Storage::url('archived_documents/' . basename($record->file_path)))
                     ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('sign')
+                    ->label('Signer')
+                    ->url(fn (Document $record) => route('document.sign', $record))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

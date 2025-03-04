@@ -36,7 +36,9 @@
                                             {{-- Display events and documents for the day --}}
                                             @php
                                                 $events = App\Models\Event::whereDate('start_time', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
-                                                $documents = App\Models\Document::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
+                                                $documents = App\Models\Document::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))
+                                                                                ->where('archived', false) // Only non-archived documents
+                                                                                ->get();
                                             @endphp
 
                                             @foreach ($events as $event)
