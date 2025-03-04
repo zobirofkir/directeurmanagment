@@ -93,7 +93,7 @@ class DocumentResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\Action::make('view_archived')
-                    ->label('Documents Téléchargés')
+                    ->label('Archives')
                     ->url('/admin/archived-documents')
                     ->openUrlInNewTab(),
             ])

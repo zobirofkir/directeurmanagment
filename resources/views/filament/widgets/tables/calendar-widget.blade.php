@@ -35,15 +35,16 @@
 
                                             {{-- Display events and documents for the day --}}
                                             @php
-                                                $events = App\Models\Event::whereDate('start_time', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
+                                                $events = App\Models\Event::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
                                                 $documents = App\Models\Document::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))
-                                                                                ->where('archived', false) // Only non-archived documents
+                                                                                ->where('archived', false)
                                                                                 ->get();
                                             @endphp
 
                                             @foreach ($events as $event)
                                                 <div class="badge event-badge">
-                                                    {{ Str::limit($event->title, 10) }}
+                                                    <h1>{{ Str::limit($event->title, 10) }}</h1>
+                                                    <p>{{ Str::limit($event->start_time, 10) }}</p>
                                                 </div>
                                             @endforeach
 
