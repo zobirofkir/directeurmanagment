@@ -14,6 +14,7 @@ class Document extends Model
         'title',
         'file_path',
         'category',
+        'archived'
     ];
 
     public function user()

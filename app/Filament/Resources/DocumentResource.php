@@ -56,7 +56,8 @@ class DocumentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+        ->query(Document::query()->where('archived', false))
+        ->columns([
                 TextColumn::make('user.name')->label('Utilisateur'),
                 TextColumn::make('title')->label('Titre'),
                 TextColumn::make('category')->label('Catégorie'),
@@ -89,6 +90,12 @@ class DocumentResource extends Resource
                         ->success()
                         ->send();
                     }),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('view_archived')
+                    ->label('Documents Téléchargés')
+                    ->url('/admin/archived-documents')
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

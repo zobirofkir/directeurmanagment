@@ -62,8 +62,14 @@ class DocumentController extends Controller
             }
         }
 
-        $document->delete();
+        $archivePath = 'archived_documents/' . basename($document->file_path);
+        Storage::disk('public')->move($document->file_path, $archivePath);
 
+        $document->update([
+            'file_path' => $archivePath,
+            'archived' => true,
+        ]);
+        
         return $response;
     }
 
