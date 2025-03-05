@@ -260,21 +260,21 @@
         /* Dark mode */
         @media (prefers-color-scheme: dark) {
             :root {
-                --cal-bg: #1a1b1e;
-                --cal-border: #2d2e32;
+                --cal-bg: #1f2937;
+                --cal-border: #374151;
                 --cal-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-                --cal-button-bg: #2d2e32;
-                --cal-button-text: #e5e7eb;
-                --cal-button-border: #404348;
-                --cal-button-hover-bg: #404348;
-                --cal-button-hover-border: #4b4f55;
-                --cal-title: #e5e7eb;
+                --cal-button-bg: #374151;
+                --cal-button-text: #ffffff;
+                --cal-button-border: #4b5563;
+                --cal-button-hover-bg: #4b5563;
+                --cal-button-hover-border: #6b7280;
+                --cal-title: #ffffff;
                 --cal-active-bg: #3b82f6;
                 --cal-active-text: #ffffff;
-                --cal-header-text: #9ca3af;
-                --cal-cell-bg: #2d2e32;
-                --cal-cell-hover-bg: #353940;
-                --cal-day-text: #e5e7eb;
+                --cal-header-text: #e5e7eb;
+                --cal-cell-bg: #374151;
+                --cal-cell-hover-bg: #4b5563;
+                --cal-day-text: #ffffff;
                 --cal-event-bg: #1d4ed8;
                 --cal-event-text: #ffffff;
                 --cal-event-border: #2563eb;
@@ -293,23 +293,23 @@
                 --cal-border: #e5e7eb;
                 --cal-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 --cal-button-bg: #f3f4f6;
-                --cal-button-text: #374151;
+                --cal-button-text: #111827;
                 --cal-button-border: #e5e7eb;
                 --cal-button-hover-bg: #e5e7eb;
                 --cal-button-hover-border: #d1d5db;
                 --cal-title: #111827;
                 --cal-active-bg: #3b82f6;
                 --cal-active-text: #ffffff;
-                --cal-header-text: #6b7280;
+                --cal-header-text: #111827;
                 --cal-cell-bg: #ffffff;
                 --cal-cell-hover-bg: #f9fafb;
-                --cal-day-text: #374151;
+                --cal-day-text: #111827;
                 --cal-event-bg: #dbeafe;
                 --cal-event-text: #1e40af;
                 --cal-event-border: #bfdbfe;
                 --cal-event-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
                 --cal-doc-bg: #f3f4f6;
-                --cal-doc-text: #374151;
+                --cal-doc-text: #111827;
                 --cal-doc-border: #e5e7eb;
                 --cal-doc-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             }
