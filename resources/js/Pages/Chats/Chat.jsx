@@ -22,10 +22,13 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             authorizer: (channel) => ({
                 authorize: async (socketId, callback) => {
                     try {
-                        const response = await axios.post('/broadcasting/auth', {
-                            socket_id: socketId,
-                            channel_name: channel.name,
-                        });
+                        const response = await axios.post(
+                            "/broadcasting/auth",
+                            {
+                                socket_id: socketId,
+                                channel_name: channel.name,
+                            }
+                        );
                         callback(null, response.data);
                     } catch (error) {
                         callback(error);
@@ -34,29 +37,30 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             }),
         });
 
-        echo.private(`chat.${currentUser.id}`)
-            .listen('MessageSent', (e) => {
-                const newMessage = {
-                    id: e.message.id,
-                    content: e.message.content,
-                    time: new Date(e.message.created_at).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }),
-                    isSender: false,
-                    sender: {
-                        id: e.message.sender.id,
-                        name: e.message.sender.name,
-                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                            e.message.sender.name
-                        )}&color=7F9CF5&background=EBF4FF`,
-                    },
-                };
+        echo.private(`chat.${currentUser.id}`).listen("MessageSent", (e) => {
+            const newMessage = {
+                id: e.message.id,
+                content: e.message.content,
+                time: e.message.created_at
+                    ? new Date(e.message.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                      })
+                    : "",
+                isSender: false,
+                sender: {
+                    id: e.message.sender.id,
+                    name: e.message.sender.name,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        e.message.sender.name
+                    )}&color=7F9CF5&background=EBF4FF`,
+                },
+            };
 
-                if (selectedContact && e.message.sender.id === selectedContact.id) {
-                    setMessages(prevMessages => [...prevMessages, newMessage]);
-                }
-            });
+            if (selectedContact && e.message.sender.id === selectedContact.id) {
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+            }
+        });
 
         return () => {
             echo.leave(`chat.${currentUser.id}`);
@@ -82,10 +86,15 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             const sentMessage = {
                 id: response.data.id,
                 content: response.data.content,
-                time: new Date(response.data.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
+                time: response.data.created_at
+                    ? new Date(response.data.created_at).toLocaleTimeString(
+                          [],
+                          {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          }
+                      )
+                    : "",
                 isSender: true,
                 sender: {
                     id: currentUser.id,
@@ -96,7 +105,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                 },
             };
 
-            setMessages(prevMessages => [...prevMessages, sentMessage]);
+            setMessages((prevMessages) => [...prevMessages, sentMessage]);
             setNewMessage("");
         } catch (error) {
             console.error("Error sending message:", error);
