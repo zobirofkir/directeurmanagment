@@ -97,29 +97,6 @@
 
         {{-- Contenu du widget --}}
         <div id="calendar" class="calendar-container">
-            <div class="calendar-header">
-                <div class="calendar-controls">
-                    <button id="today" class="control-button">Aujourd'hui</button>
-                    <div class="nav-buttons">
-                        <button id="prevMonth" class="nav-button">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                        </button>
-                        <button id="nextMonth" class="nav-button">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <h3 class="calendar-title" id="currentMonth">Mars 2025</h3>
-                </div>
-                <div class="view-options">
-                    <button class="view-button active" data-view="month">Mois</button>
-                    <button class="view-button" data-view="week">Semaine</button>
-                    <button class="view-button" data-view="day">Jour</button>
-                </div>
-            </div>
 
             <div class="calendar-grid">
                 <table class="calendar-table">
