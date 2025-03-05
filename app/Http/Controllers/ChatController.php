@@ -78,6 +78,8 @@ class ChatController extends Controller
             return [
                 'id' => $message->id,
                 'content' => $message->content,
+                'media_url' => $message->media_url ? asset('storage/' . $message->media_url) : null,
+                'media_type' => $message->media_type,
                 'time' => $message->created_at->format('H:i'),
                 'date' => $message->created_at->format('Y-m-d'),
                 'isSender' => $message->sender_id === Auth::id(),
@@ -99,18 +101,30 @@ class ChatController extends Controller
     {
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'content' => 'required|string'
+            'content' => 'required_without:media|string|nullable',
+            'media' => 'nullable|file|mimes:jpeg,png,gif,mp4,mov,avi|max:10240' // 10MB max
         ]);
 
-        $message = Message::create([
+        $message = new Message([
             'sender_id' => Auth::id(),
             'receiver_id' => $validated['receiver_id'],
-            'content' => $validated['content']
+            'content' => $validated['content'] ?? null,
         ]);
+
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $path = $file->store('chat-media', 'public');
+            $message->media_url = $path;
+            $message->media_type = $this->getMediaType($file->getMimeType());
+        }
+
+        $message->save();
 
         $messageData = [
             'id' => $message->id,
             'content' => $message->content,
+            'media_url' => $message->media_url ? asset('storage/' . $message->media_url) : null,
+            'media_type' => $message->media_type,
             'time' => $message->created_at->format('H:i'),
             'isSender' => true
         ];
@@ -118,5 +132,15 @@ class ChatController extends Controller
         broadcast(new MessageSent($message))->toOthers();
 
         return response()->json($messageData);
+    }
+
+    private function getMediaType($mimeType)
+    {
+        if (strpos($mimeType, 'image/') === 0) {
+            return 'image';
+        } elseif (strpos($mimeType, 'video/') === 0) {
+            return 'video';
+        }
+        return null;
     }
 }
