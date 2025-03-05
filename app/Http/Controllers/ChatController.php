@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\NewMessageNotification;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
@@ -138,6 +140,12 @@ class ChatController extends Controller
 
             $message->save();
 
+            // Get the receiver user
+            $receiver = User::find($validated['receiver_id']);
+
+            // Send notification
+            $receiver->notify(new NewMessageNotification($message, Auth::user()));
+
             $messageData = [
                 'id' => $message->id,
                 'content' => $message->content,
@@ -157,7 +165,7 @@ class ChatController extends Controller
             return response()->json($messageData);
 
         } catch (\Exception $e) {
-            \Log::error('Message sending failed: ' . $e->getMessage());
+            Log::error('Message sending failed: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to send message',
                 'error' => $e->getMessage()
