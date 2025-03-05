@@ -14,7 +14,19 @@ class Document extends Model
         'title',
         'file_path',
         'category',
-        'archived'
+        'archived',
+        'date'
+    ];
+
+    protected $casts = [
+        'archived' => 'boolean',
+        'date' => 'datetime',
+    ];
+
+    protected $dates = [
+        'date',
+        'created_at',
+        'updated_at'
     ];
 
     public function user()

@@ -13,8 +13,36 @@ class CalendarWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    // Add notification state
+    // Add state properties for filtering
+    public $currentDate;
+    public $showEvents = true;
+    public $showDocuments = true;
+    public $selectedCategory = 'all';
+    public $startDate = null;
+    public $endDate = null;
     public $notification = null;
+
+    public function mount()
+    {
+        $this->currentDate = Carbon::create(2025, 3, 1);
+        $this->startDate = $this->currentDate->copy()->startOfMonth()->format('Y-m-d');
+        $this->endDate = $this->currentDate->copy()->endOfMonth()->format('Y-m-d');
+    }
+
+    public function updatedStartDate($value)
+    {
+        if ($value) {
+            $this->currentDate = Carbon::parse($value);
+        }
+    }
+
+    public function updatedEndDate($value)
+    {
+        // Optional: Add validation if end date is before start date
+        if ($value && $this->startDate && Carbon::parse($value)->isBefore(Carbon::parse($this->startDate))) {
+            $this->endDate = $this->startDate;
+        }
+    }
 
     public function showAlert($message, $type = 'info')
     {
@@ -24,20 +52,62 @@ class CalendarWidget extends Widget
         ];
     }
 
+    public function nextMonth()
+    {
+        $this->currentDate->addMonth();
+    }
+
+    public function previousMonth()
+    {
+        $this->currentDate->subMonth();
+    }
+
+    public function toggleEvents()
+    {
+        $this->showEvents = !$this->showEvents;
+    }
+
+    public function toggleDocuments()
+    {
+        $this->showDocuments = !$this->showDocuments;
+    }
+
+    public function setCategory($category)
+    {
+        $this->selectedCategory = $category;
+    }
+
     public function getData(): array
     {
-        $events = Event::whereYear('created_at', 2025)
-            ->whereMonth('created_at', 3)
-            ->get();
+        $events = collect([]);
+        $documents = collect([]);
 
-        $documents = Document::whereYear('created_at', 2025)
-            ->whereMonth('created_at', 3)
-            ->where('archived', false)
-            ->get();
+        $startDate = $this->startDate ? Carbon::parse($this->startDate) : $this->currentDate->copy()->startOfMonth();
+        $endDate = $this->endDate ? Carbon::parse($this->endDate) : $this->currentDate->copy()->endOfMonth();
+
+        if ($this->showEvents) {
+            $events = Event::whereBetween('start_time', [$startDate, $endDate])
+                ->when($this->selectedCategory !== 'all', function ($query) {
+                    return $query->where('type', $this->selectedCategory);
+                })
+                ->get();
+        }
+
+        if ($this->showDocuments) {
+            $documents = Document::whereBetween('date', [$startDate, $endDate])
+                ->where('archived', false)
+                ->when($this->selectedCategory !== 'all', function ($query) {
+                    return $query->where('category', $this->selectedCategory);
+                })
+                ->get();
+        }
 
         return [
             'events' => $events,
             'documents' => $documents,
+            'currentDate' => $this->currentDate,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
         ];
     }
 }

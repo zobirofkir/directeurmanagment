@@ -12,6 +12,7 @@ use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -51,6 +52,10 @@ class DocumentResource extends Resource
                     ])
                     ->required()
                     ->label('Catégorie'),
+                DateTimePicker::make('date')
+                    ->required()
+                    ->label('Date')
+                    ->default(now()),
             ])->columns(1);
     }
 

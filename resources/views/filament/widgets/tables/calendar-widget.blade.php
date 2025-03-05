@@ -12,6 +12,89 @@
             </div>
         </div>
 
+        {{-- Add Filter Controls --}}
+        <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <x-filament::input.wrapper>
+                        <x-filament::input
+                            type="date"
+                            wire:model.live="startDate"
+                            class="w-40"
+                            placeholder="Start Date"
+                        />
+                    </x-filament::input.wrapper>
+
+                    <span class="text-gray-500">to</span>
+
+                    <x-filament::input.wrapper>
+                        <x-filament::input
+                            type="date"
+                            wire:model.live="endDate"
+                            class="w-40"
+                            placeholder="End Date"
+                        />
+                    </x-filament::input.wrapper>
+                </div>
+
+                <button
+                    wire:click="toggleEvents"
+                    class="px-4 py-2 rounded-lg {{ $showEvents ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700' }}"
+                >
+                    {{ $showEvents ? 'Hide Events' : 'Show Events' }}
+                </button>
+
+                <button
+                    wire:click="toggleDocuments"
+                    class="px-4 py-2 rounded-lg {{ $showDocuments ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700' }}"
+                >
+                    {{ $showDocuments ? 'Hide Documents' : 'Show Documents' }}
+                </button>
+
+                <select
+                    wire:model.live="selectedCategory"
+                    class="rounded-lg border-gray-300"
+                >
+                    <option value="all">All Categories</option>
+                    <optgroup label="Events">
+                        <option value="meeting">Meetings</option>
+                        <option value="deadline">Deadlines</option>
+                        <option value="other">Other Events</option>
+                    </optgroup>
+                    <optgroup label="Documents">
+                        <option value="contract">Contracts</option>
+                        <option value="certificate">Certificates</option>
+                        <option value="leave">Leave</option>
+                        <option value="other">Other Documents</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button
+                    wire:click="previousMonth"
+                    class="p-2 rounded-lg hover:bg-gray-100"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+
+                <span class="text-lg font-semibold">
+                    {{ $currentDate->format('F Y') }}
+                </span>
+
+                <button
+                    wire:click="nextMonth"
+                    class="p-2 rounded-lg hover:bg-gray-100"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         {{-- Contenu du widget --}}
         <div id="calendar" class="calendar-container">
             <div class="calendar-header">
@@ -52,38 +135,49 @@
                         </tr>
                     </thead>
                     <tbody id="calendarBody">
-                        {{-- Génération dynamique des jours --}}
+                        {{-- Replace the static date generation with dynamic dates from events and documents --}}
                         @php
-                            $firstDayOfMonth = \Carbon\Carbon::create(2025, 3, 1)->startOfMonth()->dayOfWeek;
-                            $daysInMonth = \Carbon\Carbon::create(2025, 3, 1)->daysInMonth;
+                            $data = $this->getData();
+                            $currentMonth = $data['currentDate'];
+                            $firstDayOfMonth = $currentMonth->copy()->startOfMonth();
+                            $firstDayOfWeek = $firstDayOfMonth->dayOfWeek;  // Get the day number (0-6)
+                            $daysInMonth = $currentMonth->daysInMonth;
                             $currentDay = 1;
+
+                            // Group events and documents by date
+                            $events = $data['events']->groupBy(function($event) {
+                                return $event->start_time->format('Y-m-d');
+                            });
+
+                            $documents = $data['documents']->groupBy(function($document) {
+                                return $document->date->format('Y-m-d');
+                            });
                         @endphp
 
                         @for ($row = 0; $row < 5; $row++)
                             <tr>
                                 @for ($col = 0; $col < 7; $col++)
-                                    @if ($row == 0 && $col < $firstDayOfMonth)
+                                    @if ($row == 0 && $col < $firstDayOfWeek)
                                         <td class="calendar-cell"></td>
                                     @elseif ($currentDay <= $daysInMonth)
                                         <td class="calendar-cell calendar-day">
                                             <span>{{ $currentDay }}</span>
 
-                                            {{-- Affichage des événements et documents pour ce jour --}}
+                                            {{-- Display events for this day --}}
                                             @php
-                                                $events = App\Models\Event::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))->get();
-                                                $documents = App\Models\Document::whereDate('created_at', \Carbon\Carbon::create(2025, 3, $currentDay)->format('Y-m-d'))
-                                                                                ->where('archived', false)
-                                                                                ->get();
+                                                $dayDate = $currentMonth->copy()->setDay($currentDay)->format('Y-m-d');
+                                                $dayEvents = $events[$dayDate] ?? collect();
+                                                $dayDocuments = $documents[$dayDate] ?? collect();
                                             @endphp
 
-                                            @foreach ($events as $event)
+                                            @foreach ($dayEvents as $event)
                                                 <div class="badge event-badge" onclick="showAlert('Événement: {{ $event->title }}', 'info')">
                                                     <h1>{{ Str::limit($event->title, 20) }}</h1>
-                                                    <p>{{ Str::limit($event->start_time, 11) }}</p>
+                                                    <p>{{ $event->start_time->format('H:i') }}</p>
                                                 </div>
                                             @endforeach
 
-                                            @foreach ($documents as $document)
+                                            @foreach ($dayDocuments as $document)
                                                 <div class="badge document-badge" onclick="showAlert('Document: {{ $document->title }}', 'info')">
                                                     {{ Str::limit($document->title, 20) }}
                                                 </div>
