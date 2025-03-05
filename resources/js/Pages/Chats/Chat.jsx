@@ -1,59 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Echo from "laravel-echo";
+import axios from "axios";
+import Pusher from "pusher-js";
 
-const Chat = () => {
-    const contacts = [
-        {
-            id: 1,
-            name: "John Doe",
-            avatar: "https://ui-avatars.com/api/?name=John+Doe",
-            online: true,
-            lastMessage: "Hey, how are you?",
-            time: "12:30 PM",
-        },
-        {
-            id: 2,
-            name: "Jane Smith",
-            avatar: "https://ui-avatars.com/api/?name=Jane+Smith",
-            online: false,
-            lastMessage: "See you tomorrow!",
-            time: "11:45 AM",
-        },
-        {
-            id: 3,
-            name: "Mike Johnson",
-            avatar: "https://ui-avatars.com/api/?name=Mike+Johnson",
-            online: true,
-            lastMessage: "Thanks for your help!",
-            time: "10:20 AM",
-        },
-    ];
-
-    const [selectedContact, setSelectedContact] = useState(contacts[0]);
+const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
+    const [selectedContact, setSelectedContact] = useState(contacts[0] || null);
+    const [messages, setMessages] = useState(initialMessages || []);
+    const [newMessage, setNewMessage] = useState("");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const messages = [
-        {
-            id: 1,
-            sender: "John Doe",
-            content: "Hey, how are you?",
-            time: "12:30 PM",
-            isSender: false,
-        },
-        {
-            id: 2,
-            sender: "You",
-            content: "I'm good, thanks! How about you?",
-            time: "12:31 PM",
-            isSender: true,
-        },
-        {
-            id: 3,
-            sender: "John Doe",
-            content: "Doing great! Want to grab coffee later?",
-            time: "12:32 PM",
-            isSender: false,
-        },
-    ];
+    useEffect(() => {
+        // Debug log to check if env variables are loaded
+        console.log("Pusher Key:", import.meta.env.VITE_PUSHER_APP_KEY);
+        console.log("Pusher Cluster:", import.meta.env.VITE_PUSHER_APP_CLUSTER);
+
+        if (
+            !import.meta.env.VITE_PUSHER_APP_KEY ||
+            !import.meta.env.VITE_PUSHER_APP_CLUSTER
+        ) {
+            console.error("Pusher configuration missing");
+            return;
+        }
+
+        const echo = new Echo({
+            broadcaster: "pusher",
+            key: import.meta.env.VITE_PUSHER_APP_KEY,
+            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+            forceTLS: true,
+            client: new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+                forceTLS: true,
+            }),
+        });
+
+        if (selectedContact?.id) {
+            echo.join(`chat.${selectedContact.id}`).listen(
+                "MessageSent",
+                (e) => {
+                    setMessages((prevMessages) => [...prevMessages, e.message]);
+                }
+            );
+        }
+
+        return () => {
+            if (selectedContact?.id) {
+                echo.leave(`chat.${selectedContact.id}`);
+            }
+        };
+    }, [selectedContact]);
+
+    const handleContactSelect = async (contact) => {
+        setSelectedContact(contact);
+        const response = await axios.get(`/messages/${contact.id}`);
+        setMessages(response.data);
+    };
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() || !selectedContact) return;
+
+        try {
+            const response = await axios.post("/messages", {
+                receiver_id: selectedContact.id,
+                content: newMessage,
+            });
+
+            setMessages([...messages, response.data]);
+            setNewMessage("");
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -87,7 +104,6 @@ const Chat = () => {
                 }`}
             >
                 <div className="p-4 border-b border-gray-200">
-
                     <div className="mt-[50px]">
                         <input
                             type="text"
@@ -106,7 +122,7 @@ const Chat = () => {
                                     : ""
                             }`}
                             onClick={() => {
-                                setSelectedContact(contact);
+                                handleContactSelect(contact);
                                 setIsSidebarOpen(false);
                             }}
                         >
@@ -126,11 +142,11 @@ const Chat = () => {
                                         {contact.name}
                                     </h3>
                                     <span className="text-xs text-gray-500">
-                                        {contact.time}
+                                        {contact.last_message_time}
                                     </span>
                                 </div>
                                 <p className="text-sm text-gray-500 truncate">
-                                    {contact.lastMessage}
+                                    {contact.last_message}
                                 </p>
                             </div>
                         </div>
@@ -146,19 +162,25 @@ const Chat = () => {
             >
                 {/* Chat Header - Updated to show selected contact */}
                 <div className="p-4 bg-white border-b border-gray-200 flex items-center">
-                    <img
-                        src={selectedContact.avatar}
-                        alt={selectedContact.name}
-                        className="w-10 h-10 rounded-full"
-                    />
-                    <div className="ml-3">
-                        <h3 className="font-semibold">
-                            {selectedContact.name}
-                        </h3>
-                        <p className="text-xs text-green-500">
-                            {selectedContact.online ? "Active now" : "Offline"}
-                        </p>
-                    </div>
+                    {selectedContact && (
+                        <>
+                            <img
+                                src={selectedContact.avatar}
+                                alt={selectedContact.name}
+                                className="w-10 h-10 rounded-full"
+                            />
+                            <div className="ml-3">
+                                <h3 className="font-semibold">
+                                    {selectedContact.name}
+                                </h3>
+                                <p className="text-xs text-green-500">
+                                    {selectedContact.online
+                                        ? "Active now"
+                                        : "Offline"}
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Messages */}
@@ -197,30 +219,22 @@ const Chat = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 bg-white border-t border-gray-200">
+                <form
+                    onSubmit={handleSendMessage}
+                    className="p-4 bg-white border-t border-gray-200"
+                >
                     <div className="flex items-center space-x-2">
-                        <button className="p-2 hover:bg-gray-100 rounded-full">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6 text-gray-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                        </button>
                         <input
                             type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Type a message..."
                             className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none"
                         />
-                        <button className="p-2 hover:bg-gray-100 rounded-full">
+                        <button
+                            type="submit"
+                            className="p-2 hover:bg-gray-100 rounded-full"
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-6 w-6 text-blue-500"
@@ -237,7 +251,7 @@ const Chat = () => {
                             </svg>
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
 
             {/* Overlay for mobile */}
