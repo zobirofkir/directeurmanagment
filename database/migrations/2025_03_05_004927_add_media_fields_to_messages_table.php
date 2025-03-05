@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::table('messages', function (Blueprint $table) {
             $table->string('media_url')->nullable();
             $table->string('media_type')->nullable();
+            // Make content column nullable if it exists
+            if (Schema::hasColumn('messages', 'content')) {
+                $table->string('content')->nullable()->change();
+            }
         });
     }
 
@@ -25,6 +29,10 @@ return new class extends Migration
         Schema::table('messages', function (Blueprint $table) {
             $table->dropColumn('media_url');
             $table->dropColumn('media_type');
+            // Revert content column to not nullable if it exists
+            if (Schema::hasColumn('messages', 'content')) {
+                $table->string('content')->nullable(false)->change();
+            }
         });
     }
 };

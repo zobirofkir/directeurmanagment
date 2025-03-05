@@ -7,6 +7,7 @@ import ChatHeader from "@/Components/Chat/ChatHeader";
 import MessageList from "@/Components/Chat/MessageList";
 import MessageInput from "@/Components/Chat/MessageInput";
 import EmojiPicker from "emoji-picker-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [selectedContact, setSelectedContact] = useState(contacts[0] || null);
@@ -15,6 +16,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const fileInputRef = useRef(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (!currentUser?.id || !import.meta.env.VITE_PUSHER_APP_KEY) {
@@ -51,6 +53,8 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             const newMessage = {
                 id: e.message.id,
                 content: e.message.content,
+                media_url: e.message.media_url,
+                media_type: e.message.media_type,
                 time: e.message.created_at
                     ? new Date(e.message.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -58,13 +62,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                       })
                     : "",
                 isSender: false,
-                sender: {
-                    id: e.message.sender.id,
-                    name: e.message.sender.name,
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        e.message.sender.name
-                    )}&color=7F9CF5&background=EBF4FF`,
-                },
+                sender: e.message.sender,
             };
 
             if (selectedContact && e.message.sender.id === selectedContact.id) {
@@ -94,6 +92,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
         try {
             const formData = new FormData();
             formData.append("receiver_id", selectedContact.id);
+
             if (newMessage.trim()) {
                 formData.append("content", newMessage);
             }
@@ -115,13 +114,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                 media_type: response.data.media_type,
                 time: response.data.time,
                 isSender: true,
-                sender: {
-                    id: currentUser.id,
-                    name: currentUser.name,
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        currentUser.name
-                    )}&color=7F9CF5&background=EBF4FF`,
-                },
+                sender: response.data.sender,
             };
 
             setMessages((prevMessages) => [...prevMessages, sentMessage]);
@@ -131,6 +124,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             }
         } catch (error) {
             console.error("Error sending message:", error);
+            alert(error.response?.data?.message || "Failed to send message");
         }
     };
 
@@ -138,8 +132,79 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
         setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
     };
 
-    const handleFileSelect = () => {
+    const handleFileSelect = async () => {
+        const file = fileInputRef.current?.files?.[0];
+        if (!file) return;
+
+        // Validate file size
+        if (file.size > 10 * 1024 * 1024) {
+            // 10MB limit
+            alert("File size should be less than 10MB");
+            fileInputRef.current.value = "";
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "video/mp4",
+            "video/quicktime",
+            "video/x-msvideo",
+        ];
+        if (!allowedTypes.includes(file.type)) {
+            alert(
+                "File type not supported. Please upload an image (JPEG, PNG, GIF) or video (MP4, MOV, AVI)"
+            );
+            fileInputRef.current.value = "";
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("media", file);
+            formData.append("receiver_id", selectedContact.id);
+
+            const response = await axios.post("/messages", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    console.log(percentCompleted);
+                },
+            });
+
+            const sentMessage = {
+                id: response.data.id,
+                content: response.data.content,
+                media_url: response.data.media_url,
+                media_type: response.data.media_type,
+                time: response.data.time,
+                isSender: true,
+                sender: response.data.sender,
+            };
+
+            setMessages((prevMessages) => [...prevMessages, sentMessage]);
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            alert(error.response?.data?.message || "Failed to upload file");
+        } finally {
+            setIsUploading(false);
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handleFileButtonClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleFileChange = () => {
+        handleFileSelect();
     };
 
     return (
@@ -180,52 +245,58 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             >
                 <ChatHeader selectedContact={selectedContact} />
                 <MessageList messages={messages} />
-                <div className="relative">
+                <div className="relative w-full">
                     {showEmojiPicker && (
                         <div className="absolute bottom-full right-0 mb-2">
                             <EmojiPicker onEmojiClick={onEmojiClick} />
                         </div>
                     )}
-                    <div className="flex items-center p-4 bg-white border-t">
-                        <button
-                            type="button"
-                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                            className="p-2 text-gray-500 hover:text-gray-700"
-                        >
-                            😊
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleFileSelect}
-                            className="p-2 text-gray-500 hover:text-gray-700"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                    <div className="flex items-center p-4 bg-white border-t w-full">
+                        <div className="flex items-center space-x-2 w-full max-w-6xl mx-auto">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowEmojiPicker(!showEmojiPicker)
+                                }
+                                className="p-2 text-gray-500 hover:text-gray-700 flex-shrink-0"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                😊
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleFileButtonClick}
+                                className="p-2 text-gray-500 hover:text-gray-700 flex-shrink-0"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                </svg>
+                            </button>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*,video/*"
+                                onChange={handleFileChange}
+                            />
+                            <div className="flex-1">
+                                <MessageInput
+                                    newMessage={newMessage}
+                                    setNewMessage={setNewMessage}
+                                    onSubmit={handleSendMessage}
                                 />
-                            </svg>
-                        </button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*,video/*"
-                            onChange={() => {}} // Add validation if needed
-                        />
-                        <MessageInput
-                            newMessage={newMessage}
-                            setNewMessage={setNewMessage}
-                            onSubmit={handleSendMessage}
-                        />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -236,6 +307,21 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                     className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
                     onClick={() => setIsSidebarOpen(false)}
                 ></div>
+            )}
+
+            {isUploading && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                >
+                    <div className="bg-white p-4 rounded-lg shadow-lg">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Uploading...
+                        </p>
+                    </div>
+                </motion.div>
             )}
         </div>
     );

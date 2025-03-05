@@ -99,39 +99,70 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        $validated = $request->validate([
-            'receiver_id' => 'required|exists:users,id',
-            'content' => 'required_without:media|string|nullable',
-            'media' => 'nullable|file|mimes:jpeg,png,gif,mp4,mov,avi|max:10240' // 10MB max
-        ]);
+        try {
+            $validated = $request->validate([
+                'receiver_id' => 'required|exists:users,id',
+                'content' => 'nullable|string',
+                'media' => 'nullable|file|mimes:jpeg,png,gif,mp4,mov,avi|max:10240' // 10MB max
+            ]);
 
-        $message = new Message([
-            'sender_id' => Auth::id(),
-            'receiver_id' => $validated['receiver_id'],
-            'content' => $validated['content'] ?? null,
-        ]);
+            $message = new Message([
+                'sender_id' => Auth::id(),
+                'receiver_id' => $validated['receiver_id'],
+                'content' => $request->input('content', ''), // Provide empty string as default
+            ]);
 
-        if ($request->hasFile('media')) {
-            $file = $request->file('media');
-            $path = $file->store('chat-media', 'public');
-            $message->media_url = $path;
-            $message->media_type = $this->getMediaType($file->getMimeType());
+            if ($request->hasFile('media')) {
+                $file = $request->file('media');
+
+                // Ensure the file is valid
+                if (!$file->isValid()) {
+                    throw new \Exception('Invalid file upload');
+                }
+
+                // Create directory if it doesn't exist
+                $path = storage_path('app/public/chat-media');
+                if (!file_exists($path)) {
+                    mkdir($path, 0755, true);
+                }
+
+                // Store the file
+                $fileName = $file->store('chat-media', 'public');
+                if (!$fileName) {
+                    throw new \Exception('Failed to store file');
+                }
+
+                $message->media_url = $fileName;
+                $message->media_type = $this->getMediaType($file->getMimeType());
+            }
+
+            $message->save();
+
+            $messageData = [
+                'id' => $message->id,
+                'content' => $message->content,
+                'media_url' => $message->media_url ? asset('storage/' . $message->media_url) : null,
+                'media_type' => $message->media_type,
+                'time' => $message->created_at->format('H:i'),
+                'isSender' => true,
+                'sender' => [
+                    'id' => Auth::id(),
+                    'name' => Auth::user()->name,
+                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&color=7F9CF5&background=EBF4FF',
+                ],
+            ];
+
+            broadcast(new MessageSent($message))->toOthers();
+
+            return response()->json($messageData);
+
+        } catch (\Exception $e) {
+            \Log::error('Message sending failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to send message',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $message->save();
-
-        $messageData = [
-            'id' => $message->id,
-            'content' => $message->content,
-            'media_url' => $message->media_url ? asset('storage/' . $message->media_url) : null,
-            'media_type' => $message->media_type,
-            'time' => $message->created_at->format('H:i'),
-            'isSender' => true
-        ];
-
-        broadcast(new MessageSent($message))->toOthers();
-
-        return response()->json($messageData);
     }
 
     private function getMediaType($mimeType)

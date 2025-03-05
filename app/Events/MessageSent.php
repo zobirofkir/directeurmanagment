@@ -39,6 +39,8 @@ class MessageSent implements ShouldBroadcast
                 ],
                 'receiver_id' => $this->message->receiver_id,
                 'sender_id' => $this->message->sender_id,
+                'media_url' => $this->message->media_url,
+                'media_type' => $this->message->media_type,
             ]
         ];
     }
