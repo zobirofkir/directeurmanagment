@@ -10,15 +10,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
-        // Debug log to check if env variables are loaded
-        console.log("Pusher Key:", import.meta.env.VITE_PUSHER_APP_KEY);
-        console.log("Pusher Cluster:", import.meta.env.VITE_PUSHER_APP_CLUSTER);
-
-        if (
-            !import.meta.env.VITE_PUSHER_APP_KEY ||
-            !import.meta.env.VITE_PUSHER_APP_CLUSTER
-        ) {
-            console.error("Pusher configuration missing");
+        if (!currentUser?.id || !import.meta.env.VITE_PUSHER_APP_KEY) {
             return;
         }
 
@@ -27,27 +19,49 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
             key: import.meta.env.VITE_PUSHER_APP_KEY,
             cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
             forceTLS: true,
-            client: new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
-                cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-                forceTLS: true,
+            authorizer: (channel) => ({
+                authorize: async (socketId, callback) => {
+                    try {
+                        const response = await axios.post('/broadcasting/auth', {
+                            socket_id: socketId,
+                            channel_name: channel.name,
+                        });
+                        callback(null, response.data);
+                    } catch (error) {
+                        callback(error);
+                    }
+                },
             }),
         });
 
-        if (selectedContact?.id) {
-            echo.join(`chat.${selectedContact.id}`).listen(
-                "MessageSent",
-                (e) => {
-                    setMessages((prevMessages) => [...prevMessages, e.message]);
+        echo.private(`chat.${currentUser.id}`)
+            .listen('MessageSent', (e) => {
+                const newMessage = {
+                    id: e.message.id,
+                    content: e.message.content,
+                    time: new Date(e.message.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                    isSender: false,
+                    sender: {
+                        id: e.message.sender.id,
+                        name: e.message.sender.name,
+                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            e.message.sender.name
+                        )}&color=7F9CF5&background=EBF4FF`,
+                    },
+                };
+
+                if (selectedContact && e.message.sender.id === selectedContact.id) {
+                    setMessages(prevMessages => [...prevMessages, newMessage]);
                 }
-            );
-        }
+            });
 
         return () => {
-            if (selectedContact?.id) {
-                echo.leave(`chat.${selectedContact.id}`);
-            }
+            echo.leave(`chat.${currentUser.id}`);
         };
-    }, [selectedContact]);
+    }, [currentUser?.id, selectedContact]);
 
     const handleContactSelect = async (contact) => {
         setSelectedContact(contact);
@@ -65,7 +79,24 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                 content: newMessage,
             });
 
-            setMessages([...messages, response.data]);
+            const sentMessage = {
+                id: response.data.id,
+                content: response.data.content,
+                time: new Date(response.data.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                isSender: true,
+                sender: {
+                    id: currentUser.id,
+                    name: currentUser.name,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        currentUser.name
+                    )}&color=7F9CF5&background=EBF4FF`,
+                },
+            };
+
+            setMessages(prevMessages => [...prevMessages, sentMessage]);
             setNewMessage("");
         } catch (error) {
             console.error("Error sending message:", error);
