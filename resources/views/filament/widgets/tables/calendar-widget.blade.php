@@ -14,8 +14,8 @@
 
         {{-- Add Filter Controls --}}
         <div class="mb-4 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4">
                     <x-filament::input.wrapper>
                         <x-filament::input
                             type="date"
@@ -70,7 +70,7 @@
                 </select>
             </div>
 
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-4">
                 <button
                     wire:click="previousMonth"
                     class="p-2 rounded-lg hover:bg-gray-100"
@@ -200,23 +200,25 @@
         .calendar-container {
             max-width: 100%;
             background: var(--cal-bg);
-            border-radius: 0.75rem;
-            box-shadow: var(--cal-shadow);
-            transition: all 0.3s ease;
+            border-radius: 1rem;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         .calendar-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1.25rem;
+            padding: 1.5rem;
+            background: var(--cal-header-bg);
             border-bottom: 1px solid var(--cal-border);
         }
 
         .calendar-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .nav-buttons {
@@ -224,59 +226,55 @@
             gap: 0.5rem;
         }
 
-        .control-button {
-            padding: 0.5rem 1rem;
-            background-color: var(--cal-button-bg);
-            color: var(--cal-button-text);
-            border: 1px solid var(--cal-button-border);
-            border-radius: 0.5rem;
+        .control-button, .nav-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--cal-button-border);
+            background: var(--cal-button-bg);
+            color: var(--cal-button-text);
+            cursor: pointer;
         }
 
-        .control-button:hover {
-            background-color: var(--cal-button-hover-bg);
-            border-color: var(--cal-button-hover-border);
+        .control-button:hover, .nav-button:hover {
+            background: var(--cal-button-hover-bg);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .nav-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 0.5rem;
-            background: var(--cal-button-bg);
-            border: 1px solid var(--cal-button-border);
-            color: var(--cal-button-text);
-            transition: all 0.2s ease;
-        }
-
-        .nav-button:hover {
-            background: var(--cal-button-hover-bg);
-            border-color: var(--cal-button-hover-border);
+            width: 2.75rem;
+            height: 2.75rem;
+            padding: 0;
         }
 
         .calendar-title {
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--cal-title);
-            margin: 0 0.5rem;
+            margin: 0 1rem;
         }
 
         .view-options {
             display: flex;
-            background: var(--cal-button-bg);
-            border: 1px solid var(--cal-button-border);
-            border-radius: 0.5rem;
+            background: var(--cal-view-options-bg);
+            border-radius: 0.75rem;
             padding: 0.25rem;
+            gap: 0.25rem;
         }
 
         .view-button {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
             font-weight: 500;
+            border: none;
+            background: transparent;
             color: var(--cal-button-text);
+            cursor: pointer;
             transition: all 0.2s ease;
         }
 
@@ -290,25 +288,27 @@
         }
 
         .calendar-grid {
-            padding: 1rem;
+            padding: 1.5rem;
         }
 
         .calendar-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0.5rem;
+            border-spacing: 0.75rem;
         }
 
         .calendar-header-cell {
             padding: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--cal-header-text);
             font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .calendar-cell {
-            height: 8rem;
-            border-radius: 0.5rem;
+            height: 9rem;
+            border-radius: 0.75rem;
             background: var(--cal-cell-bg);
             border: 1px solid var(--cal-border);
             vertical-align: top;
@@ -317,78 +317,75 @@
 
         .calendar-cell:hover {
             background: var(--cal-cell-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .calendar-day {
-            padding: 0.5rem;
+            padding: 0.75rem;
+            position: relative;
         }
 
         .calendar-day span {
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             color: var(--cal-day-text);
             font-weight: 500;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-badge, .document-badge {
+            margin: 0.35rem 0;
+            padding: 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
         }
 
         .event-badge {
-            margin: 0.25rem 0;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
             background: var(--cal-event-bg);
             color: var(--cal-event-text);
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
             border: 1px solid var(--cal-event-border);
         }
 
-        .event-badge:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--cal-event-shadow);
-        }
-
         .document-badge {
-            margin: 0.25rem 0;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
             background: var(--cal-doc-bg);
             color: var(--cal-doc-text);
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
             border: 1px solid var(--cal-doc-border);
         }
 
-        .document-badge:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--cal-doc-shadow);
+        .event-badge:hover, .document-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         /* Dark mode */
         @media (prefers-color-scheme: dark) {
             :root {
-                --cal-bg: #1f2937;
-                --cal-border: #374151;
-                --cal-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-                --cal-button-bg: #374151;
-                --cal-button-text: #ffffff;
-                --cal-button-border: #4b5563;
-                --cal-button-hover-bg: #4b5563;
-                --cal-button-hover-border: #6b7280;
-                --cal-title: #ffffff;
+                --cal-bg: #1a1f2d;
+                --cal-header-bg: #1f2937;
+                --cal-border: #2d3748;
+                --cal-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                --cal-button-bg: #2d3748;
+                --cal-button-text: #e2e8f0;
+                --cal-button-border: #4a5568;
+                --cal-button-hover-bg: #3a4657;
+                --cal-title: #f7fafc;
                 --cal-active-bg: #3b82f6;
                 --cal-active-text: #ffffff;
-                --cal-header-text: #e5e7eb;
-                --cal-cell-bg: #374151;
-                --cal-cell-hover-bg: #4b5563;
-                --cal-day-text: #ffffff;
-                --cal-event-bg: #1d4ed8;
-                --cal-event-text: #ffffff;
+                --cal-header-text: #a0aec0;
+                --cal-cell-bg: #1f2937;
+                --cal-cell-hover-bg: #2d3748;
+                --cal-day-text: #e2e8f0;
+                --cal-event-bg: #1e3a8a;
+                --cal-event-text: #bfdbfe;
                 --cal-event-border: #2563eb;
-                --cal-event-shadow: 0 4px 6px -1px rgba(29, 78, 216, 0.3);
-                --cal-doc-bg: #4b5563;
-                --cal-doc-text: #ffffff;
-                --cal-doc-border: #6b7280;
-                --cal-doc-shadow: 0 4px 6px -1px rgba(75, 85, 99, 0.3);
+                --cal-doc-bg: #374151;
+                --cal-doc-text: #e5e7eb;
+                --cal-doc-border: #4b5563;
+                --cal-view-options-bg: #2d3748;
             }
         }
 
@@ -396,90 +393,95 @@
         @media (prefers-color-scheme: light) {
             :root {
                 --cal-bg: #ffffff;
-                --cal-border: #e5e7eb;
-                --cal-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                --cal-button-bg: #f3f4f6;
-                --cal-button-text: #111827;
-                --cal-button-border: #e5e7eb;
-                --cal-button-hover-bg: #e5e7eb;
-                --cal-button-hover-border: #d1d5db;
-                --cal-title: #111827;
+                --cal-header-bg: #f8fafc;
+                --cal-border: #e2e8f0;
+                --cal-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                --cal-button-bg: #f1f5f9;
+                --cal-button-text: #475569;
+                --cal-button-border: #e2e8f0;
+                --cal-button-hover-bg: #e2e8f0;
+                --cal-title: #1e293b;
                 --cal-active-bg: #3b82f6;
                 --cal-active-text: #ffffff;
-                --cal-header-text: #111827;
+                --cal-header-text: #64748b;
                 --cal-cell-bg: #ffffff;
-                --cal-cell-hover-bg: #f9fafb;
-                --cal-day-text: #111827;
-                --cal-event-bg: #dbeafe;
+                --cal-cell-hover-bg: #f8fafc;
+                --cal-day-text: #334155;
+                --cal-event-bg: #eff6ff;
                 --cal-event-text: #1e40af;
                 --cal-event-border: #bfdbfe;
-                --cal-event-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
-                --cal-doc-bg: #f3f4f6;
-                --cal-doc-text: #111827;
-                --cal-doc-border: #e5e7eb;
-                --cal-doc-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                --cal-doc-bg: #f8fafc;
+                --cal-doc-text: #475569;
+                --cal-doc-border: #e2e8f0;
+                --cal-view-options-bg: #f1f5f9;
             }
         }
 
+        /* Alert Styles */
         .calendar-alert {
             position: fixed;
-            top: 1rem;
-            right: 1rem;
+            top: 1.5rem;
+            right: 1.5rem;
             z-index: 50;
-            transition: all 0.3s ease;
-        }
-
-        .calendar-alert.hidden {
-            opacity: 0;
-            transform: translateY(-1rem);
-            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 24rem;
         }
 
         .alert-content {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--cal-alert-bg, #3b82f6);
-            color: var(--cal-alert-text, #ffffff);
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .alert-message {
-            font-size: 0.875rem;
+            font-size: 0.925rem;
             font-weight: 500;
         }
 
         .alert-close {
-            padding: 0.25rem;
-            border-radius: 0.375rem;
+            padding: 0.375rem;
+            border-radius: 0.5rem;
             transition: all 0.2s ease;
+            margin-left: 1rem;
         }
 
         .alert-close:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* Alert types */
+        /* Alert Types */
         .alert-info {
-            --cal-alert-bg: #3b82f6;
-            --cal-alert-text: #ffffff;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #ffffff;
         }
 
         .alert-success {
-            --cal-alert-bg: #10b981;
-            --cal-alert-text: #ffffff;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
         }
 
         .alert-warning {
-            --cal-alert-bg: #f59e0b;
-            --cal-alert-text: #ffffff;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
         }
 
         .alert-error {
-            --cal-alert-bg: #ef4444;
-            --cal-alert-text: #ffffff;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+        }
+
+        /* Drag and Drop Styles */
+        .dragging {
+            opacity: 0.5;
+            cursor: move;
+        }
+
+        .drag-over {
+            background: var(--cal-cell-hover-bg);
+            border: 2px dashed var(--cal-active-bg);
         }
     </style>
 
