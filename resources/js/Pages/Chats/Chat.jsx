@@ -8,6 +8,7 @@ import MessageList from "@/Components/Chat/MessageList";
 import MessageInput from "@/Components/Chat/MessageInput";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoutButton from "@/Components/LogoutButton";
+import notificationFile from "../../assets/notification/notification.mp3";
 
 const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [selectedContact, setSelectedContact] = useState(contacts[0] || null);
@@ -16,6 +17,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const fileInputRef = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
+    const notificationSound = useRef(new Audio(notificationFile));
 
     useEffect(() => {
         if (!currentUser?.id || !import.meta.env.VITE_PUSHER_APP_KEY) {
@@ -66,6 +68,15 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
 
             if (selectedContact && e.message.sender.id === selectedContact.id) {
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+                // Play notification sound with better error handling
+                notificationSound.current.play().catch((error) => {
+                    console.error("Error playing notification:", error);
+                    // Optionally initialize a new Audio object if the current one fails
+                    notificationSound.current = new Audio(
+                        "/sounds/notification.mp3"
+                    );
+                });
             }
         });
 
