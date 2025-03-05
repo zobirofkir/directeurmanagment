@@ -99,10 +99,11 @@ class TaskResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('open')
                     ->label('Open')
-                    ->url(fn (Task $record) => url($record->meeting_link))
-                    ->openUrlInNewTab(),
+                    ->url(fn (Task $record) => $record->meeting_link ? (string)url($record->meeting_link) : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn (Task $record) => filled($record->meeting_link)),
                 Tables\Actions\ViewAction::make()
-                    ->url(fn (Task $record) => TaskResource::getUrl('view', ['record' => $record])),
+                    ->url(fn (Task $record) => (string)TaskResource::getUrl('view', ['record' => $record])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
