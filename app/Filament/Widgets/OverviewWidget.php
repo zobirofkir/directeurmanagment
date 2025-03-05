@@ -10,62 +10,118 @@ use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 
 class OverviewWidget extends BaseWidget
 {
+    protected static ?string $pollingInterval = '30s';
+
     protected function getStats(): array
     {
-        $stats = [
+        return Cache::remember('overview_stats_' . Auth::id(), now()->addMinutes(5), function () {
+            $stats = [
+                $this->getChatStat(),
+                $this->getUsersStat(),
+                $this->getProjectsStat(),
+                $this->getTasksStat(),
+            ];
 
-            Stat::make('Chat ✨', 'Chat 🗨️')
-                ->description('Chat 📲')
-                ->color('success')
-                ->icon('heroicon-o-cog')
-                ->extraAttributes(['style' => 'text-align: center;'])
-                ->url(url('admin/chats')),
+            if ($this->canViewDocuments()) {
+                $stats[] = $this->getDocumentsStat();
+            }
 
-            Stat::make('Utilisateurs Totals', User::count())
-                ->description('Nombre total d\'utilisateurs')
-                ->color('success')
-                ->icon('heroicon-o-users'),
+            return $stats;
+        });
+    }
 
-            Stat::make('Projects', Project::count())
-                ->description('Projects')
-                ->color('danger'),
+    protected function getChatStat(): Stat
+    {
+        return Stat::make(
+            label: 'Chat',
+            value: 'Communication Center'
+        )
+            ->description('Click to open chat')
+            ->color('success')
+            ->icon('heroicon-o-chat-bubble-left-right')
+            ->extraAttributes([
+                'class' => 'cursor-pointer',
+                'wire:click' => "navigate('".url('admin/chats')."')",
+            ]);
+    }
 
-            Stat::make('Tasks', Task::count())
-                ->description('Tasks')
-                ->color('warning'),
+    protected function getUsersStat(): Stat
+    {
+        $growth = $this->calculateUserGrowth();
+        $userCount = User::count();
+
+        return Stat::make(
+            label: 'Total Users',
+            value: number_format($userCount)
+        )
+            ->description("Growth: {$growth}%")
+            ->descriptionIcon($growth > 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
+            ->color($growth > 0 ? 'success' : 'danger')
+            ->icon('heroicon-o-users');
+    }
+
+    protected function getProjectsStat(): Stat
+    {
+        $projectCount = Project::count();
+
+        return Stat::make(
+            label: 'Projects',
+            value: number_format($projectCount)
+        )
+            ->description('Active Projects')
+            ->color('danger')
+            ->icon('heroicon-o-rectangle-stack');
+    }
+
+    protected function getTasksStat(): Stat
+    {
+        $taskCount = Task::count();
+
+        return Stat::make(
+            label: 'Tasks',
+            value: number_format($taskCount)
+        )
+            ->description('Pending Tasks')
+            ->color('warning')
+            ->icon('heroicon-o-clipboard-document-list');
+    }
+
+    protected function getDocumentsStat(): Stat
+    {
+        $documentCount = Document::count();
+
+        return Stat::make(
+            label: 'Documents',
+            value: number_format($documentCount)
+        )
+            ->description('Total Documents')
+            ->color('success')
+            ->icon('heroicon-o-document');
+    }
+
+    protected function canViewDocuments(): bool
+    {
+        $allowedRoles = [
+            RolesEnum::Director->value,
+            RolesEnum::Secretary->value,
+            RolesEnum::SecretaryGeneral->value,
         ];
 
-        // Check if the user can view the 'Documents' stat
-        if ($this->canViewDocuments()) {
-            $stats[] = Stat::make('Documents', Document::count())
-                ->description('Documents')
-                ->color('success');
-        }
-
-        return $stats;
+        return Auth::user()->roles()->whereIn('name', $allowedRoles)->exists();
     }
 
-    // This method checks if the logged-in user has the correct roles for the 'Documents' stat
-    private function canViewDocuments(): bool
-    {
-        $directorRole = Role::firstOrCreate(['name' => RolesEnum::Director->value]);
-        $secretaryRole = Role::firstOrCreate(['name' => RolesEnum::Secretary->value]);
-        $secretaryGenerale = Role::firstOrCreate(['name' => RolesEnum::SecretaryGeneral->value]);
-
-        return Auth::user()->hasRole($directorRole) || Auth::user()->hasRole($secretaryRole) || Auth::user()->hasRole($secretaryGenerale);
-    }
-
-    private function calculateUserGrowth()
+    protected function calculateUserGrowth(): float
     {
         $lastMonthCount = User::whereDate('created_at', '>=', now()->subMonth())->count();
         $currentMonthCount = User::whereDate('created_at', '>=', now()->startOfMonth())->count();
 
-        if ($lastMonthCount == 0) {
-            return 0;
+        if ($lastMonthCount === 0) {
+            return 0.0;
         }
 
         return round((($currentMonthCount - $lastMonthCount) / $lastMonthCount) * 100, 2);

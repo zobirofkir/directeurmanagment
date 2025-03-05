@@ -4,64 +4,84 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Enums\RolesEnum;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine if the user can view any users.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
      */
-    public function viewAny(User $user)
+    public function viewAny(?User $user): bool
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        if (!$user) return false;
+
+        return $user->hasAnyRole([
+            RolesEnum::Director->value,
+            RolesEnum::Secretary->value,
+            RolesEnum::SecretaryGeneral->value
+        ]);
     }
 
     /**
      * Determine if the user can view the user model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
-     * @return bool
      */
-    public function view(User $user, User $model)
+    public function view(?User $user, User $model): bool
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $model->id;
+        if (!$user) return false;
+
+        return $user->hasAnyRole([
+            RolesEnum::Director->value,
+            RolesEnum::Secretary->value,
+            RolesEnum::SecretaryGeneral->value
+        ]) || $user->id === $model->id;
     }
 
     /**
-     * Determine if the user can update the user model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
-     * @return bool
+     * Determine if the user can create models.
      */
-    public function update(User $user, User $model)
+    public function create(?User $user): bool
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $model->id;
+        if (!$user) return false;
+
+        return $user->hasAnyRole([
+            RolesEnum::Director->value,
+            RolesEnum::SecretaryGeneral->value,
+            RolesEnum::Secretary->value
+        ]);
     }
 
     /**
-     * Determine if the user can delete the user model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
-     * @return bool
+     * Determine if the user can update the model.
      */
-    public function delete(User $user, User $model)
+    public function update(?User $user, User $model): bool
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $model->id;
+        if (!$user) return false;
+
+        return $user->hasAnyRole([
+            RolesEnum::Director->value,
+            RolesEnum::Secretary->value,
+            RolesEnum::SecretaryGeneral->value
+        ]) || $user->id === $model->id;
     }
 
     /**
-     * Determine if the user can create a new user.
-     *
-     * @param  \App\Models\User  $user
-     * @return bool
+     * Determine if the user can delete the model.
      */
-    public function create(User $user)
+    public function delete(?User $user, User $model): bool
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->hasRole(RolesEnum::Secretary->value);
+        if (!$user) return false;
+
+        // Prevent users from deleting themselves
+        if ($user->id === $model->id) {
+            return false;
+        }
+
+        return $user->hasAnyRole([
+            RolesEnum::Director->value,
+            RolesEnum::Secretary->value,
+            RolesEnum::SecretaryGeneral->value
+        ]);
     }
 }

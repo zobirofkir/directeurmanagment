@@ -23,6 +23,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 
 class EventResource extends Resource
 {
@@ -95,5 +96,11 @@ class EventResource extends Resource
             'edit' => Pages\EditEvent::route('/{record}/edit'),
             'calendar' => CalendarView::route('/calendar'),
         ];
+    }
+
+    protected function afterCreate(): void
+    {
+        // Emit event for calendar refresh
+        $this->dispatch('event-created');
     }
 }

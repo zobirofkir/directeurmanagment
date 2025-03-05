@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Auth\Events\Login;
+use App\Models\Employee;
+use Illuminate\Support\Facades\Gate;
+use Filament\Navigation\NavigationGroup;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -58,42 +61,67 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->navigationGroups([
+                'User Management',
+                'Documents',
+                'System'
+            ])
+            ->brandName('Admin Panel');
     }
 
     public function boot(): void
     {
         Filament::serving(function () {
-            Filament::registerRenderHook('user-menu.start', function () {
-                return view('filament.components.user-role', [
-                    'role' => Auth::user()?->roles->first()->name ?? 'Guest'
-                ]);
-            });
+            // Get authenticated user
+            $user = Auth::user();
+
+            Filament::registerRenderHook('user-menu.start', fn () =>
+                view('filament.components.user-role', [
+                    'role' => $user?->roles->first()?->name ?? 'Guest'
+                ])
+            );
 
             Filament::registerNavigationItems([
                 NavigationItem::make()
-                    ->label('Users Management')
+                    ->group('User Management')
+                    ->label('Users')
                     ->url(fn () => route('filament.admin.resources.users.index'))
                     ->icon('heroicon-o-users')
-                    ->visible(fn () => Auth::user()?->can('view users')),
+                    ->visible(fn () => $user && $user->hasAnyRole([
+                        'Director',
+                        'Secretary',
+                        'SecretaryGeneral'
+                    ])),
 
                 NavigationItem::make()
+                    ->group('User Management')
                     ->label('Employees')
                     ->url(fn () => route('filament.admin.resources.employees.index'))
                     ->icon('heroicon-o-user-group')
-                    ->visible(fn () => Auth::user()?->can('viewAny', Employee::class)),
+                    ->visible(fn () => $user && $user->hasAnyRole([
+                        'Director',
+                        'Secretary',
+                        'SecretaryGeneral'
+                    ])),
 
                 NavigationItem::make()
+                    ->group('Documents')
                     ->label('Documents')
                     ->url(fn () => route('filament.admin.resources.documents.index'))
-                    ->icon('heroicon-o-user-group')
-                    ->visible(fn () => Auth::user()?->can('viewAny', Document::class)),
+                    ->icon('heroicon-o-document')
+                    ->visible(fn () => $user && $user->hasAnyRole([
+                        'Director',
+                        'Secretary',
+                        'SecretaryGeneral'
+                    ])),
             ]);
         });
 
-        Event::listen(Login::class, function ($event) {
-            $user = $event->user;
-            $user->update(['is_active' => true]);
+        Event::listen(Login::class, function (Login $event) {
+            if ($event->user instanceof \App\Models\User) {
+                $event->user->forceFill(['is_active' => true])->save();
+            }
         });
     }
 }

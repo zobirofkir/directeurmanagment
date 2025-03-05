@@ -119,4 +119,10 @@ class DocumentResource extends Resource
             'edit' => Pages\EditDocument::route('/{record}/edit'),
         ];
     }
+
+    protected function afterCreate(): void
+    {
+        // Emit event for calendar refresh
+        $this->dispatch('document-created');
+    }
 }
