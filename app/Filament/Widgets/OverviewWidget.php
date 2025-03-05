@@ -126,4 +126,9 @@ class OverviewWidget extends BaseWidget
 
         return round((($currentMonthCount - $lastMonthCount) / $lastMonthCount) * 100, 2);
     }
+
+    public function navigate($url)
+    {
+        return redirect()->to($url);
+    }
 }
