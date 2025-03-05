@@ -138,31 +138,4 @@ class DocumentResource extends Resource
     {
         return static::getModel()::activeCount() > 0 ? 'primary' : 'gray';
     }
-
-    protected function afterCreate(): void
-    {
-        $document = $this->record;
-
-        // Get all directors and secretaries
-        $users = User::role([
-            RolesEnum::Director->value,
-            RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value
-        ])->get();
-
-        // Send notification to each user
-        foreach ($users as $user) {
-            $user->notify(new NewDocumentNotification($document));
-        }
-
-        // Show success notification in the UI
-        Notification::make()
-            ->title('Document créé avec succès')
-            ->body('Les notifications ont été envoyées aux utilisateurs concernés.')
-            ->success()
-            ->send();
-
-        // Emit event for calendar refresh
-        $this->dispatch('document-created');
-    }
 }
