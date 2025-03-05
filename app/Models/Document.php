@@ -21,4 +21,10 @@ class Document extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Add a scope for active (non-archived) documents
+    public static function activeCount()
+    {
+        return static::where('archived', false)->count();
+    }
 }

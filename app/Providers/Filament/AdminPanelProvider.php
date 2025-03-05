@@ -108,6 +108,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->group('Documents')
                     ->label('Documents')
+                    ->badge(fn () => Document::activeCount())
                     ->url(fn () => route('filament.admin.resources.documents.index'))
                     ->icon('heroicon-o-document')
                     ->visible(fn () => $user && $user->hasAnyRole([
