@@ -108,56 +108,65 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
 
     return (
         <div className="flex h-screen bg-gray-100">
-            {/* Mobile Sidebar Toggle Button */}
-            <button
-                className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            {/* Header Bar - New Addition */}
+            <div className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-40 flex items-center justify-between px-4 md:px-6">
+                {/* Mobile Sidebar Toggle Button */}
+                <button
+                    className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                    />
-                </svg>
-            </button>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-gray-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                    </svg>
+                </button>
 
-            {/* Add Logout Button here */}
-            <div className="fixed top-4 right-4 z-50">
+                {/* App Title/Logo */}
+                <div className="hidden md:block text-xl font-semibold text-gray-800">
+                    Chat App
+                </div>
+
+                {/* Logout Button */}
                 <LogoutButton />
             </div>
 
-            <ContactList
-                contacts={contacts}
-                selectedContact={selectedContact}
-                onContactSelect={handleContactSelect}
-                isSidebarOpen={isSidebarOpen}
-                setIsSidebarOpen={setIsSidebarOpen}
-            />
+            {/* Main Content - Updated with top padding */}
+            <div className="flex w-full pt-16">
+                <ContactList
+                    contacts={contacts}
+                    selectedContact={selectedContact}
+                    onContactSelect={handleContactSelect}
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}
+                />
 
-            <div
-                className={`flex-1 flex flex-col ${
-                    !selectedContact && "hidden md:flex"
-                }`}
-            >
-                <ChatHeader selectedContact={selectedContact} />
-                <MessageList messages={messages} />
-                <div className="relative w-full">
-                    <div className="flex items-center p-4 bg-white border-t w-full">
-                        <div className="flex items-center space-x-2 w-full max-w-6xl mx-auto">
-                            <div className="flex-1">
-                                <MessageInput
-                                    newMessage={newMessage}
-                                    setNewMessage={setNewMessage}
-                                    onSubmit={handleSendMessage}
-                                />
+                <div
+                    className={`flex-1 flex flex-col ${
+                        !selectedContact && "hidden md:flex"
+                    }`}
+                >
+                    <ChatHeader selectedContact={selectedContact} />
+                    <MessageList messages={messages} />
+                    <div className="relative w-full">
+                        <div className="flex items-center p-4 bg-white border-t w-full">
+                            <div className="flex items-center space-x-2 w-full max-w-6xl mx-auto">
+                                <div className="flex-1">
+                                    <MessageInput
+                                        newMessage={newMessage}
+                                        setNewMessage={setNewMessage}
+                                        onSubmit={handleSendMessage}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
