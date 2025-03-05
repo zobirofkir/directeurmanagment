@@ -11,16 +11,18 @@ class DocumentCreated extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Document $document;
-
-    public function __construct(Document $document)
-    {
-        $this->document = $document;
-    }
+    public function __construct(
+        public Document $document
+    ) {}
 
     public function build()
     {
-        return $this->subject('Nouveau document à signer') 
-                    ->view('emails.document_created', ['document' => $this->document]);
+        return $this->subject('Nouveau document: ' . $this->document->title)
+            ->markdown('emails.documents.created', [
+                'document' => $this->document,
+                'url' => route('filament.admin.resources.documents.edit', $this->document),
+                'userRole' => $this->document->user->role,
+                'userName' => $this->document->user->name,
+            ]);
     }
 }

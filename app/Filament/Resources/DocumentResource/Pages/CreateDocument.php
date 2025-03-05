@@ -15,23 +15,18 @@ class CreateDocument extends CreateRecord
 {
     protected static string $resource = DocumentResource::class;
 
-    protected function saved(): void
+    protected function afterCreate(): void
     {
-        parent::saved();
-
         $document = $this->record;
 
-        $rolesToSendMail = [
+        $users = User::whereIn('role', [
             RolesEnum::Director->value,
             RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value,
-        ];
+            RolesEnum::SecretaryGeneral->value
+        ])->get();
 
-        foreach ($rolesToSendMail as $role) {
-            $users = User::role($role)->get();
-            foreach ($users as $user) {
-                Mail::to($user->email)->send(new DocumentCreated($document)); 
-            }
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(new DocumentCreated($document));
         }
     }
 }

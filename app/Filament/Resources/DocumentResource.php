@@ -81,15 +81,23 @@ class DocumentResource extends Resource
                     ->label('Envoyer Email')
                     ->color('success')
                     ->action(function (Document $record) {
-                        $users = User::role(RolesEnum::Director->value)->orWhere('role', RolesEnum::Secretary->value)->orWhere('role', RolesEnum::SecretaryGeneral->value)->get();
+                        $users = User::whereIn('role', [
+                            RolesEnum::Director->value,
+                            RolesEnum::Secretary->value,
+                            RolesEnum::SecretaryGeneral->value
+                        ])->get();
 
+                        $emailsSent = 0;
                         foreach ($users as $user) {
                             Mail::to($user->email)->send(new DocumentCreated($record));
+                            $emailsSent++;
                         }
+
                         Notification::make()
-                        ->title('Email Sent Successfully')
-                        ->success()
-                        ->send();
+                            ->title('Email envoyé avec succès')
+                            ->body("Les emails ont été envoyés à {$emailsSent} destinataires (directeurs, secrétaires et secrétaires généraux).")
+                            ->success()
+                            ->send();
                     }),
             ])
             ->headerActions([
