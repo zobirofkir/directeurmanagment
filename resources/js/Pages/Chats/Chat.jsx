@@ -7,6 +7,7 @@ import ChatHeader from "@/Components/Chat/ChatHeader";
 import MessageList from "@/Components/Chat/MessageList";
 import MessageInput from "@/Components/Chat/MessageInput";
 import { motion, AnimatePresence } from "framer-motion";
+import LogoutButton from "@/Components/LogoutButton";
 
 const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
     const [selectedContact, setSelectedContact] = useState(contacts[0] || null);
@@ -127,6 +128,11 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                     />
                 </svg>
             </button>
+
+            {/* Add Logout Button here */}
+            <div className="fixed top-4 right-4 z-50">
+                <LogoutButton />
+            </div>
 
             <ContactList
                 contacts={contacts}
