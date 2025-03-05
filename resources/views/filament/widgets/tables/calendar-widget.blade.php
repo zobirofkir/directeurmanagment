@@ -27,16 +27,16 @@
             </div>
 
             <div class="calendar-grid">
-                <table>
+                <table class="calendar-table">
                     <thead>
                         <tr>
-                            <th>Dim</th>
-                            <th>Lun</th>
-                            <th>Mar</th>
-                            <th>Mer</th>
-                            <th>Jeu</th>
-                            <th>Ven</th>
-                            <th>Sam</th>
+                            <th class="calendar-header-cell">Dim</th>
+                            <th class="calendar-header-cell">Lun</th>
+                            <th class="calendar-header-cell">Mar</th>
+                            <th class="calendar-header-cell">Mer</th>
+                            <th class="calendar-header-cell">Jeu</th>
+                            <th class="calendar-header-cell">Ven</th>
+                            <th class="calendar-header-cell">Sam</th>
                         </tr>
                     </thead>
                     <tbody id="calendarBody">
@@ -51,9 +51,9 @@
                             <tr>
                                 @for ($col = 0; $col < 7; $col++)
                                     @if ($row == 0 && $col < $firstDayOfMonth)
-                                        <td></td>
+                                        <td class="calendar-cell"></td>
                                     @elseif ($currentDay <= $daysInMonth)
-                                        <td class="calendar-day">
+                                        <td class="calendar-cell calendar-day">
                                             <span>{{ $currentDay }}</span>
 
                                             {{-- Affichage des événements et documents pour ce jour --}}
@@ -79,7 +79,7 @@
                                         </td>
                                         @php $currentDay++; @endphp
                                     @else
-                                        <td></td>
+                                        <td class="calendar-cell"></td>
                                     @endif
                                 @endfor
                             </tr>
@@ -187,20 +187,20 @@
             padding: 1rem;
         }
 
-        table {
+        .calendar-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0.5rem;
         }
 
-        th {
+        .calendar-header-cell {
             padding: 0.75rem;
             font-weight: 500;
             color: var(--cal-header-text);
             font-size: 0.875rem;
         }
 
-        td {
+        .calendar-cell {
             height: 8rem;
             border-radius: 0.5rem;
             background: var(--cal-cell-bg);
@@ -209,7 +209,7 @@
             transition: all 0.2s ease;
         }
 
-        td:hover {
+        .calendar-cell:hover {
             background: var(--cal-cell-hover-bg);
         }
 
