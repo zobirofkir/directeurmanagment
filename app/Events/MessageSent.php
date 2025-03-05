@@ -42,6 +42,7 @@ class MessageSent implements ShouldBroadcast
                 'sender_id' => $this->message->sender_id,
                 'media_url' => $this->message->media_url ? asset('storage/' . $this->message->media_url) : null,
                 'media_type' => $this->message->media_type,
+                'time' => $this->message->created_at->format('H:i'),
             ]
         ];
     }

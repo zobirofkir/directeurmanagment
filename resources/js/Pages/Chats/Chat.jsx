@@ -56,12 +56,12 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
                 content: e.message.content,
                 media_url: e.message.media_url,
                 media_type: e.message.media_type,
-                time: e.message.created_at
-                    ? new Date(e.message.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                      })
-                    : "",
+                time:
+                    e.message.time ||
+                    new Date(e.message.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
                 isSender: false,
                 sender: e.message.sender,
             };
