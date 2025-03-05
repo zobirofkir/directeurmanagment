@@ -1,5 +1,17 @@
 <x-filament-widgets::widget>
     <x-filament::section>
+        {{-- Add Alert Component --}}
+        <div id="calendar-alert" class="calendar-alert hidden">
+            <div class="alert-content">
+                <span class="alert-message"></span>
+                <button class="alert-close">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         {{-- Contenu du widget --}}
         <div id="calendar" class="calendar-container">
             <div class="calendar-header">
@@ -65,14 +77,14 @@
                                             @endphp
 
                                             @foreach ($events as $event)
-                                                <div class="badge event-badge">
+                                                <div class="badge event-badge" onclick="showAlert('Événement: {{ $event->title }}', 'info')">
                                                     <h1>{{ Str::limit($event->title, 20) }}</h1>
                                                     <p>{{ Str::limit($event->start_time, 11) }}</p>
                                                 </div>
                                             @endforeach
 
                                             @foreach ($documents as $document)
-                                                <div class="badge document-badge">
+                                                <div class="badge document-badge" onclick="showAlert('Document: {{ $document->title }}', 'info')">
                                                     {{ Str::limit($document->title, 20) }}
                                                 </div>
                                             @endforeach
@@ -314,6 +326,67 @@
                 --cal-doc-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             }
         }
+
+        .calendar-alert {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-alert.hidden {
+            opacity: 0;
+            transform: translateY(-1rem);
+            pointer-events: none;
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--cal-alert-bg, #3b82f6);
+            color: var(--cal-alert-text, #ffffff);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-message {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .alert-close {
+            padding: 0.25rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+
+        .alert-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Alert types */
+        .alert-info {
+            --cal-alert-bg: #3b82f6;
+            --cal-alert-text: #ffffff;
+        }
+
+        .alert-success {
+            --cal-alert-bg: #10b981;
+            --cal-alert-text: #ffffff;
+        }
+
+        .alert-warning {
+            --cal-alert-bg: #f59e0b;
+            --cal-alert-text: #ffffff;
+        }
+
+        .alert-error {
+            --cal-alert-bg: #ef4444;
+            --cal-alert-text: #ffffff;
+        }
     </style>
 
     <script>
@@ -386,10 +459,34 @@
                     const event = document.getElementById(eventId);
                     if (event) {
                         cell.appendChild(event);
+                        showAlert('Événement déplacé avec succès', 'success');
                         // Here you would typically update the event date in the database
                     }
                 });
             });
+
+            // Add alert functionality
+            function showAlert(message, type = 'info') {
+                const alert = document.getElementById('calendar-alert');
+                const alertMessage = alert.querySelector('.alert-message');
+
+                alert.classList.remove('hidden');
+                alert.querySelector('.alert-content').className = `alert-content alert-${type}`;
+                alertMessage.textContent = message;
+
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    hideAlert();
+                }, 3000);
+            }
+
+            function hideAlert() {
+                const alert = document.getElementById('calendar-alert');
+                alert.classList.add('hidden');
+            }
+
+            // Add click handler for alert close button
+            document.querySelector('.alert-close').addEventListener('click', hideAlert);
         });
     </script>
 </x-filament-widgets::widget>

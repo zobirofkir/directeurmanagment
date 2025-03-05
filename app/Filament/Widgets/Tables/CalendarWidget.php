@@ -13,6 +13,17 @@ class CalendarWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
+    // Add notification state
+    public $notification = null;
+
+    public function showAlert($message, $type = 'info')
+    {
+        $this->notification = [
+            'message' => $message,
+            'type' => $type
+        ];
+    }
+
     public function getData(): array
     {
         $events = Event::whereYear('created_at', 2025)
