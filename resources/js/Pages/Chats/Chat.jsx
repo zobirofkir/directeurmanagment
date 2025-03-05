@@ -132,7 +132,7 @@ const Chat = ({ contacts, messages: initialMessages, currentUser }) => {
 
             const sentMessage = {
                 id: response.data.id,
-                content: response.data.content,
+                content: response.data.content || "",
                 media_url: response.data.media_url,
                 media_type: response.data.media_type,
                 time: response.data.time,

@@ -36,10 +36,11 @@ class MessageSent implements ShouldBroadcast
                 'sender' => [
                     'id' => $this->message->sender->id,
                     'name' => $this->message->sender->name,
+                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($this->message->sender->name) . '&color=7F9CF5&background=EBF4FF',
                 ],
                 'receiver_id' => $this->message->receiver_id,
                 'sender_id' => $this->message->sender_id,
-                'media_url' => $this->message->media_url,
+                'media_url' => $this->message->media_url ? asset('storage/' . $this->message->media_url) : null,
                 'media_type' => $this->message->media_type,
             ]
         ];
