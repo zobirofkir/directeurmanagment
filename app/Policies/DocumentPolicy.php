@@ -63,4 +63,15 @@ class DocumentPolicy
     {
         return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::DirecteurAdjoint->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
+
+    /**
+     * Determine if the user can sign documents.
+     */
+    public function sign(User $user, Document $document)
+    {
+        return $user->hasRole(RolesEnum::Director->value)
+            || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value)
+            || $user->hasRole(RolesEnum::Secretary->value)
+            || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+    }
 }

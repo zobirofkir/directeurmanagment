@@ -80,7 +80,8 @@ class DocumentResource extends Resource
                 Tables\Actions\Action::make('sign')
                     ->label('Signer')
                     ->url(fn (Document $record) => route('document.sign', $record))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->hidden(fn (Document $record) => auth()->user()->hasRole(RolesEnum::DirecteurAdjoint->value)),
 
                 Tables\Actions\Action::make('send_email')
                     ->label('Envoyer Email')

@@ -11,7 +11,9 @@ Route::middleware('auth')->group(function() {
     /**
      * Get Documents
      */
-    Route::get('/document/{document}/sign', [DocumentController::class, 'sign'])->name('document.sign');
+    Route::get('/document/{document}/sign', [DocumentController::class, 'sign'])
+        ->name('document.sign')
+        ->middleware('can:sign,document');
 
     /**
      * Download Signed Document
