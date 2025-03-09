@@ -41,31 +41,31 @@
                     wire:click="toggleEvents"
                     class="px-4 py-2 rounded-lg {{ $showEvents ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700' }}"
                 >
-                    {{ $showEvents ? 'Hide Events' : 'Show Events' }}
+                    {{ $showEvents ? 'Masquer' : 'Afficher' }}
                 </button>
 
                 <button
                     wire:click="toggleDocuments"
                     class="px-4 py-2 rounded-lg {{ $showDocuments ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700' }}"
                 >
-                    {{ $showDocuments ? 'Hide Documents' : 'Show Documents' }}
+                    {{ $showDocuments ? 'Masquer' : 'Afficher' }}
                 </button>
 
                 <select
                     wire:model.live="selectedCategory"
-                    class="rounded-lg border-gray-300"
+                    class="rounded-lg  border-gray-300 select_style"
                 >
-                    <option value="all">All Categories</option>
-                    <optgroup label="Events">
-                        <option value="meeting">Meetings</option>
-                        <option value="deadline">Deadlines</option>
-                        <option value="other">Other Events</option>
+                    <option value="all">Toutes les Catégories</option>
+                    <optgroup label="Événements">
+                        <option value="meeting">Réunions</option>
+                        <option value="deadline">Échéances</option>
+                        <option value="other">Autres Événements</option>
                     </optgroup>
                     <optgroup label="Documents">
-                        <option value="contract">Contracts</option>
-                        <option value="certificate">Certificates</option>
-                        <option value="leave">Leave</option>
-                        <option value="other">Other Documents</option>
+                        <option value="contract">Contrats</option>
+                        <option value="certificate">Certificats</option>
+                        <option value="leave">Congés</option>
+                        <option value="other">Autres Documents</option>
                     </optgroup>
                 </select>
             </div>
@@ -174,6 +174,9 @@
     </x-filament::section>
 
     <style>
+        .select_style {
+            color: black;
+        }
         .calendar-container {
             max-width: 100%;
             background: var(--cal-bg);
@@ -533,7 +536,7 @@
                     if (event) {
                         cell.appendChild(event);
                         showAlert('Événement déplacé avec succès', 'success');
-                        // Here you would typically update the event date in the database
+                        // Ici vous mettriez à jour la date de l'événement dans la base de données
                     }
                 });
             });
@@ -547,7 +550,6 @@
                 alert.querySelector('.alert-content').className = `alert-content alert-${type}`;
                 alertMessage.textContent = message;
 
-                // Auto-hide after 3 seconds
                 setTimeout(() => {
                     hideAlert();
                 }, 3000);
