@@ -36,13 +36,5 @@
             <img src="file://{{ $page }}" alt="Page {{ $loop->iteration }}">
         </div>
     @endforeach
-    <div class="signature-container">
-        <h2>التوقيع:</h2>
-        @if($signature)
-            <img src="{{ $signature }}" alt="Signature">
-        @else
-            <p>لا يوجد توقيع متاح.</p>
-        @endif
-    </div>
 </body>
 </html>

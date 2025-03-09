@@ -51,13 +51,5 @@
         </div>
     @endforeach
 
-    <div class="signature-container">
-        <h2>Signature:</h2>
-        @if($signature)
-            <img src="{{ $signature }}" alt="Signature">
-        @else
-            <p>Aucune signature disponible.</p>
-        @endif
-    </div>
 </body>
 </html>
