@@ -38,10 +38,10 @@ class OverviewWidget extends BaseWidget
     protected function getChatStat(): Stat
     {
         return Stat::make(
-            label: 'Chat',
-            value: 'Communication Center'
+            label: 'Discussion',
+            value: 'Centre de Communication'
         )
-            ->description('Click to open chat')
+            ->description('Cliquez pour ouvrir la discussion')
             ->color('success')
             ->icon('heroicon-o-chat-bubble-left-right')
             ->extraAttributes([
@@ -56,10 +56,10 @@ class OverviewWidget extends BaseWidget
         $userCount = User::count();
 
         return Stat::make(
-            label: 'Total Users',
+            label: 'Total Utilisateurs',
             value: number_format($userCount)
         )
-            ->description("Growth: {$growth}%")
+            ->description("Croissance: {$growth}%")
             ->descriptionIcon($growth > 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
             ->color($growth > 0 ? 'success' : 'danger')
             ->icon('heroicon-o-users');
@@ -70,10 +70,10 @@ class OverviewWidget extends BaseWidget
         $projectCount = Project::count();
 
         return Stat::make(
-            label: 'Projects',
+            label: 'Projets',
             value: number_format($projectCount)
         )
-            ->description('Active Projects')
+            ->description('Projets Actifs')
             ->color('danger')
             ->icon('heroicon-o-rectangle-stack');
     }
@@ -83,10 +83,10 @@ class OverviewWidget extends BaseWidget
         $taskCount = Task::count();
 
         return Stat::make(
-            label: 'Tasks',
+            label: 'Tâches',
             value: number_format($taskCount)
         )
-            ->description('Pending Tasks')
+            ->description('Tâches en Attente')
             ->color('warning')
             ->icon('heroicon-o-clipboard-document-list');
     }
@@ -99,7 +99,7 @@ class OverviewWidget extends BaseWidget
             label: 'Documents',
             value: number_format($documentCount)
         )
-            ->description('Total Documents')
+            ->description('Total des Documents')
             ->color('success')
             ->icon('heroicon-o-document');
     }
