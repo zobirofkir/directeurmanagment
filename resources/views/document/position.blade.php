@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Positionner la signature</title>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #fff;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1002;
+        }
+
         .signature-preview {
             position: absolute;
             cursor: move;
@@ -13,18 +29,30 @@
             border: 2px dashed #4CAF50;
             padding: 5px;
             z-index: 1000;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .signature-preview:hover {
+            transform: scale(1.02);
+        }
+
+        .signature-preview.dragging {
+            opacity: 0.8;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         #document-container {
             position: relative;
-            margin: 20px auto;
-            max-width: 800px;
+            flex-grow: 1;
+            height: calc(100vh - 140px);
+            overflow: hidden;
             background: #fff;
         }
 
         .document-frame {
             width: 100%;
-            height: 800px;
+            height: 100%;
             border: none;
         }
 
@@ -34,59 +62,138 @@
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            padding: 15px;
+            padding: 15px 25px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1001;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
-        button {
+        .btn {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            margin: 0 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        button:hover {
+        .btn:hover {
             background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .zoom-controls {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .zoom-btn {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #f5f5f5;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h2>Positionnez votre signature sur le document</h2>
+    </div>
+
     <div id="document-container">
         <img src="{{ $signature }}" id="signature-preview" class="signature-preview">
-        <iframe src="{{ Storage::url($document->file_path) }}" class="document-frame"></iframe>
+        <iframe src="{{ Storage::url($document->file_path) }}" id="document-frame" class="document-frame"></iframe>
+    </div>
+
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="adjustZoom(0.1)">+</button>
+        <button class="zoom-btn" onclick="adjustZoom(-0.1)">-</button>
+        <button class="zoom-btn" onclick="resetZoom()">↺</button>
     </div>
 
     <div class="controls">
-        <form action="{{ route('document.download.signed', $document) }}" method="POST">
+        <form action="{{ route('document.download.signed', $document) }}" method="POST" id="signature-form">
             @csrf
             <input type="hidden" name="signature" value="{{ $signature }}">
             <input type="hidden" name="language" value="{{ $language }}">
             <input type="hidden" name="position_x" id="position_x">
             <input type="hidden" name="position_y" id="position_y">
-            <button type="submit">Confirmer la position</button>
+            <input type="hidden" name="scale" id="scale_factor" value="1">
+            <button type="submit" class="btn">
+                <i class="fas fa-check"></i>
+                Confirmer la position
+            </button>
         </form>
+        <button onclick="resetPosition()" class="btn btn-secondary">
+            <i class="fas fa-undo"></i>
+            Réinitialiser
+        </button>
     </div>
 
     <script>
         const signaturePreview = document.getElementById('signature-preview');
         const container = document.getElementById('document-container');
+        const documentFrame = document.getElementById('document-frame');
         let isDragging = false;
         let currentX;
         let currentY;
         let initialX;
         let initialY;
+        let scale = 1;
+        let originalWidth = 0;
+        let originalHeight = 0;
 
-        signaturePreview.addEventListener('mousedown', dragStart);
+        // Initialize signature position
+        window.addEventListener('load', () => {
+            const bounds = container.getBoundingClientRect();
+            signaturePreview.style.left = (bounds.width / 2 - signaturePreview.offsetWidth / 2) + 'px';
+            signaturePreview.style.top = (bounds.height / 2 - signaturePreview.offsetHeight / 2) + 'px';
+            updatePositionInputs();
+        });
+
+        function initDraggable(element) {
+            element.addEventListener('mousedown', dragStart);
+            element.addEventListener('touchstart', dragStart, { passive: false });
+        }
+
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', dragEnd);
-        document.addEventListener('touchstart', dragStart);
-        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
         document.addEventListener('touchend', dragEnd);
+
+        initDraggable(signaturePreview);
 
         function dragStart(e) {
             if (e.type === 'touchstart') {
@@ -97,43 +204,82 @@
                 initialY = e.clientY - signaturePreview.offsetTop;
             }
             isDragging = true;
+            signaturePreview.classList.add('dragging');
         }
 
         function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
+            if (!isDragging) return;
+            e.preventDefault();
 
-                if (e.type === 'touchmove') {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-
-                // Get container boundaries
-                const bounds = container.getBoundingClientRect();
-
-                // Constrain movement within container
-                currentX = Math.max(bounds.left, Math.min(bounds.right - signaturePreview.offsetWidth, currentX));
-                currentY = Math.max(bounds.top, Math.min(bounds.bottom - signaturePreview.offsetHeight, currentY));
-
-                // Update position
-                signaturePreview.style.left = currentX + 'px';
-                signaturePreview.style.top = currentY + 'px';
-
-                // Store relative positions
-                const relativeX = currentX - bounds.left;
-                const relativeY = currentY - bounds.top;
-
-                document.getElementById('position_x').value = relativeX;
-                document.getElementById('position_y').value = relativeY;
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
             }
+
+            const bounds = container.getBoundingClientRect();
+            currentX = Math.max(bounds.left, Math.min(bounds.right - signaturePreview.offsetWidth, currentX));
+            currentY = Math.max(bounds.top, Math.min(bounds.bottom - signaturePreview.offsetHeight, currentY));
+
+            setPosition(currentX, currentY);
+            updatePositionInputs();
         }
 
         function dragEnd() {
             isDragging = false;
+            signaturePreview.classList.remove('dragging');
         }
+
+        function setPosition(x, y) {
+            signaturePreview.style.left = x + 'px';
+            signaturePreview.style.top = y + 'px';
+        }
+
+        function updatePositionInputs() {
+            const bounds = container.getBoundingClientRect();
+            const relativeX = parseFloat(signaturePreview.style.left) - bounds.left;
+            const relativeY = parseFloat(signaturePreview.style.top) - bounds.top;
+
+            document.getElementById('position_x').value = relativeX;
+            document.getElementById('position_y').value = relativeY;
+            document.getElementById('scale_factor').value = scale;
+        }
+
+        function resetPosition() {
+            const bounds = container.getBoundingClientRect();
+            setPosition(
+                bounds.width / 2 - signaturePreview.offsetWidth / 2,
+                bounds.height / 2 - signaturePreview.offsetHeight / 2
+            );
+            updatePositionInputs();
+            resetZoom();
+        }
+
+        function adjustZoom(delta) {
+            scale = Math.max(0.5, Math.min(2, scale + delta));
+            signaturePreview.style.transform = `scale(${scale})`;
+            updatePositionInputs();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            signaturePreview.style.transform = `scale(${scale})`;
+            updatePositionInputs();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const bounds = container.getBoundingClientRect();
+            if (parseFloat(signaturePreview.style.left) > bounds.width) {
+                setPosition(bounds.width - signaturePreview.offsetWidth, parseFloat(signaturePreview.style.top));
+            }
+            if (parseFloat(signaturePreview.style.top) > bounds.height) {
+                setPosition(parseFloat(signaturePreview.style.left), bounds.height - signaturePreview.offsetHeight);
+            }
+            updatePositionInputs();
+        });
     </script>
 </body>
 </html>
