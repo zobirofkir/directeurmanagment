@@ -39,7 +39,7 @@ class OverviewWidget extends BaseWidget
     {
         return Stat::make(
             label: 'Discussion',
-            value: 'Centre de Communication'
+            value: 'Communication'
         )
             ->description('Cliquez pour ouvrir la discussion')
             ->color('success')
