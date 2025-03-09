@@ -92,16 +92,31 @@ class DocumentResource extends Resource
                             RolesEnum::SecretaryGeneral->value
                         ])->get();
 
+                        if ($users->isEmpty()) {
+                            Notification::make()
+                                ->title('Attention')
+                                ->body("Aucun destinataire trouvé avec les rôles spécifiés.")
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
                         $emailsSent = 0;
                         foreach ($users as $user) {
-                            Mail::to($user->email)->send(new DocumentCreated($record));
-                            $emailsSent++;
+                            try {
+                                Mail::to($user->email)->send(new DocumentCreated($record));
+                                $emailsSent++;
+                            } catch (\Exception $e) {
+                                \Log::error('Failed to send email to ' . $user->email . ': ' . $e->getMessage());
+                            }
                         }
 
                         Notification::make()
-                            ->title('Email envoyé avec succès')
-                            ->body("Les emails ont été envoyés à {$emailsSent} destinataires (directeurs, secrétaires et secrétaires généraux).")
-                            ->success()
+                            ->title($emailsSent > 0 ? 'Email envoyé avec succès' : 'Échec de l\'envoi')
+                            ->body($emailsSent > 0
+                                ? "Les emails ont été envoyés à {$emailsSent} destinataires (directeurs, secrétaires et secrétaires généraux)."
+                                : "Aucun email n'a pu être envoyé. Veuillez vérifier les logs pour plus de détails.")
+                            ->status($emailsSent > 0 ? 'success' : 'danger')
                             ->send();
                     }),
             ])
