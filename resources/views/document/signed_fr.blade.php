@@ -9,6 +9,7 @@
             font-family: 'DejaVu Sans', sans-serif;
             padding: 20px;
             color: #333;
+            position: relative;
         }
         .page {
             margin-bottom: 20px;
@@ -27,12 +28,26 @@
             border: 1px solid #000;
             border-radius: 8px;
         }
+        .signature-image {
+            position: absolute;
+            left: {{ $position_x }}px;
+            top: {{ $position_y }}px;
+            max-width: 200px;
+            max-height: 100px;
+        }
+        .page-image {
+            width: 100%;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    @foreach($pages as $page)
-        <div class="page">
-            <img src="file://{{ $page }}" alt="Page {{ $loop->iteration }}">
+    @foreach($pages as $index => $page)
+        <div class="page" style="position: relative; margin-bottom: 20px;">
+            <img src="{{ $page }}" class="page-image">
+            @if($index === 0)
+                <img src="{{ $signature }}" class="signature-image">
+            @endif
         </div>
     @endforeach
 

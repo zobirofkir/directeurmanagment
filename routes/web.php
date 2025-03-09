@@ -16,9 +16,16 @@ Route::middleware('auth')->group(function() {
         ->middleware('can:sign,document');
 
     /**
+     * Select Signature Position
+     */
+    Route::post('/document/{document}/select-position', [DocumentController::class, 'selectSignaturePosition'])
+        ->name('document.select.position');
+
+    /**
      * Download Signed Document
      */
-    Route::post('/document/{document}/download-signed', [DocumentController::class, 'downloadSignedDocument'])->name('document.download.signed');
+    Route::post('/document/{document}/download-signed', [DocumentController::class, 'downloadSignedDocument'])
+        ->name('document.download.signed');
 });
 
 require __DIR__.'/auth.php';

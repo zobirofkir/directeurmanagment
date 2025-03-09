@@ -168,7 +168,7 @@
 <body>
     <h1>Signature du document : {{ $document->title }}</h1>
     <iframe src="{{ Storage::url($document->file_path) }}" width="100%" height="500px"></iframe>
-    <form action="{{ route('document.download.signed', $document) }}" method="POST">
+    <form action="{{ route('document.select.position', $document) }}" method="POST">
         @csrf
         <div class="form-container">
             <div class="language-select">

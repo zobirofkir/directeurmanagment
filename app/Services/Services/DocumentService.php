@@ -17,11 +17,41 @@ class DocumentService implements DocumentConstructor
         return view('document.sign', compact('document'));
     }
 
+    public function selectSignaturePosition(Document $document, $signature, $language)
+    {
+        return view('document.position', compact('document', 'signature', 'language'));
+    }
+
     public function downloadSignedDocument(Document $document, Request $request)
     {
         $signature = $request->input('signature');
         $language = $request->input('language', 'en');
+        $positionX = (int) $request->input('position_x', 0);
+        $positionY = (int) $request->input('position_y', 0);
 
+        // Convert signature data URL to image file
+        $signatureImage = null;
+        if (preg_match('/^data:image\/(\w+);base64,/', $signature, $type)) {
+            $data = substr($signature, strpos($signature, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, gif
+
+            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                throw new \Exception('Invalid image type');
+            }
+
+            $data = base64_decode($data);
+
+            if ($data === false) {
+                throw new \Exception('Failed to decode base64');
+            }
+
+            $signatureImage = storage_path('app/public/temp/signature.' . $type);
+            file_put_contents($signatureImage, $data);
+        } else {
+            throw new \Exception('Invalid signature format');
+        }
+
+        // Convert PDF to images
         $filePath = Storage::disk('public')->path($document->file_path);
         $tempDir = storage_path('app/public/temp');
         if (!file_exists($tempDir)) {
@@ -39,10 +69,13 @@ class DocumentService implements DocumentConstructor
         $viewName = 'document.signed_' . $language;
         $pdf = DomPDF::loadView($viewName, [
             'document' => $document,
-            'signature' => $signature,
+            'signature' => $signatureImage,
             'pages' => $pages,
+            'position_x' => $positionX,
+            'position_y' => $positionY,
         ]);
 
+        // Set PDF options
         switch ($language) {
             case 'ar':
                 $pdf->setOption('defaultFont', 'Amiri');
@@ -56,14 +89,20 @@ class DocumentService implements DocumentConstructor
                 break;
         }
 
+        // Generate response
         $response = $pdf->download('signed_document_' . $language . '.pdf');
 
+        // Clean up temporary files
         foreach ($pages as $page) {
             if (file_exists($page)) {
                 unlink($page);
             }
         }
+        if (file_exists($signatureImage)) {
+            unlink($signatureImage);
+        }
 
+        // Archive the document
         $archivePath = 'archived_documents/' . basename($document->file_path);
         Storage::disk('public')->move($document->file_path, $archivePath);
 

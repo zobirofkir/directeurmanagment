@@ -13,6 +13,13 @@ class DocumentController extends Controller
         return DocumentFacade::sign($document);
     }
 
+    public function selectSignaturePosition(Document $document, Request $request)
+    {
+        $signature = $request->input('signature');
+        $language = $request->input('language', 'fr');
+        return DocumentFacade::selectSignaturePosition($document, $signature, $language);
+    }
+
     public function downloadSignedDocument(Document $document, Request $request)
     {
         return DocumentFacade::downloadSignedDocument($document, $request);
