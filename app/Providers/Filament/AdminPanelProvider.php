@@ -117,6 +117,7 @@ class AdminPanelProvider extends PanelProvider
                         'Director',
                         'Secretary',
                         'SecretaryGeneral',
+                        'DirecteurAdjoint',
                         'RHResponsableResourceHumaine'
                     ])),
             ]);
