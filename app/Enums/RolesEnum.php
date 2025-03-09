@@ -10,6 +10,7 @@ enum RolesEnum: string
     case Secretary = 'secrétaire';
     case SecretaryGeneral = 'secrétaire generale';
     case DirecteurAdjoint = 'directeur adjoint';
+    case RHResponsableResourceHumaine = 'RH Responsable Resource Humaine';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum RolesEnum: string
             static::Secretary => 'Secrétaires',
             static::SecretaryGeneral => 'secrétaire generale',
             static::DirecteurAdjoint => 'directeur adjoint',
+            static::RHResponsableResourceHumaine => 'RH Responsable Resource Humaine',
         };
     }
 }

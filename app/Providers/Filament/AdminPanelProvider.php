@@ -91,7 +91,8 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn () => $user && $user->hasAnyRole([
                         'Director',
                         'Secretary',
-                        'SecretaryGeneral'
+                        'SecretaryGeneral',
+                        'RHResponsableResourceHumaine'
                     ])),
 
                 NavigationItem::make()
@@ -102,7 +103,8 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn () => $user && $user->hasAnyRole([
                         'Director',
                         'Secretary',
-                        'SecretaryGeneral'
+                        'SecretaryGeneral',
+                        'RHResponsableResourceHumaine'
                     ])),
 
                 NavigationItem::make()
@@ -114,13 +116,14 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn () => $user && $user->hasAnyRole([
                         'Director',
                         'Secretary',
-                        'SecretaryGeneral'
+                        'SecretaryGeneral',
+                        'RHResponsableResourceHumaine'
                     ])),
             ]);
         });
 
         Event::listen(Login::class, function (Login $event) {
-            if ($event->user instanceof \App\Models\User) {
+            if ($event->user instanceof User) {
                 $event->user->forceFill(['is_active' => true])->save();
             }
         });

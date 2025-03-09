@@ -20,7 +20,8 @@ class UserPolicy
         return $user->hasAnyRole([
             RolesEnum::Director->value,
             RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value
+            RolesEnum::SecretaryGeneral->value,
+            RolesEnum::RHResponsableResourceHumaine->value
         ]);
     }
 
@@ -34,7 +35,8 @@ class UserPolicy
         return $user->hasAnyRole([
             RolesEnum::Director->value,
             RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value
+            RolesEnum::SecretaryGeneral->value,
+            RolesEnum::RHResponsableResourceHumaine->value
         ]) || $user->id === $model->id;
     }
 
@@ -48,7 +50,8 @@ class UserPolicy
         return $user->hasAnyRole([
             RolesEnum::Director->value,
             RolesEnum::SecretaryGeneral->value,
-            RolesEnum::Secretary->value
+            RolesEnum::Secretary->value,
+            RolesEnum::RHResponsableResourceHumaine->value
         ]);
     }
 
@@ -62,7 +65,8 @@ class UserPolicy
         return $user->hasAnyRole([
             RolesEnum::Director->value,
             RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value
+            RolesEnum::SecretaryGeneral->value,
+            RolesEnum::RHResponsableResourceHumaine->value
         ]) || $user->id === $model->id;
     }
 
@@ -81,7 +85,8 @@ class UserPolicy
         return $user->hasAnyRole([
             RolesEnum::Director->value,
             RolesEnum::Secretary->value,
-            RolesEnum::SecretaryGeneral->value
+            RolesEnum::SecretaryGeneral->value,
+            RolesEnum::RHResponsableResourceHumaine->value
         ]);
     }
 }

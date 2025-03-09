@@ -13,7 +13,7 @@ class DocumentPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
 
     /**
@@ -21,7 +21,7 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $document->user_id;
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $document->user_id;
     }
 
     /**
@@ -29,7 +29,7 @@ class DocumentPolicy
      */
     public function create(User $user)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
 
     /**
@@ -37,7 +37,7 @@ class DocumentPolicy
      */
     public function update(User $user, Document $document)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $document->user_id;
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value) || $user->id === $document->user_id;
     }
 
     /**
@@ -45,7 +45,7 @@ class DocumentPolicy
      */
     public function delete(User $user, Document $document)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
 
     /**
@@ -53,7 +53,7 @@ class DocumentPolicy
      */
     public function restore(User $user, Document $document)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::Secretary->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
 
     /**
@@ -61,6 +61,6 @@ class DocumentPolicy
      */
     public function forceDelete(User $user, Document $document)
     {
-        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
+        return $user->hasRole(RolesEnum::Director->value) || $user->hasRole(RolesEnum::RHResponsableResourceHumaine->value) || $user->hasRole(RolesEnum::SecretaryGeneral->value);
     }
 }
