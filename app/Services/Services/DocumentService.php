@@ -26,8 +26,9 @@ class DocumentService implements DocumentConstructor
     {
         $signature = $request->input('signature');
         $language = $request->input('language', 'en');
-        $positionX = (int) $request->input('position_x', 0);
-        $positionY = (int) $request->input('position_y', 0);
+        $positionX = floatval($request->input('position_x', 0));
+        $positionY = floatval($request->input('position_y', 0));
+        $scale = floatval($request->input('scale', 1));
 
         // Convert signature data URL to image file
         $signatureImage = null;
@@ -73,7 +74,16 @@ class DocumentService implements DocumentConstructor
             'pages' => $pages,
             'position_x' => $positionX,
             'position_y' => $positionY,
+            'scale' => $scale
         ]);
+
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'portrait');
+
+        // Set additional options
+        $pdf->setOption('enable_php', true);
+        $pdf->setOption('isPhpEnabled', true);
+        $pdf->setOption('isRemoteEnabled', true);
 
         // Set PDF options
         switch ($language) {

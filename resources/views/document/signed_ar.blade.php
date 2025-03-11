@@ -10,30 +10,39 @@
             direction: rtl;
             padding: 20px;
             color: #333;
+            margin: 0;
         }
         .page {
+            position: relative;
             margin-bottom: 20px;
-            border: 1px solid #ccc;
+            page-break-after: always;
         }
-        .page img {
+        .page:last-child {
+            page-break-after: avoid;
+        }
+        .page img.page-image {
             width: 100%;
             height: auto;
+            display: block;
         }
-        .signature-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .signature-container img {
-            max-width: 150px;
-            border: 1px solid #000;
-            border-radius: 8px;
+        .signature-image {
+            position: absolute;
+            left: {{ $position_x }}%;
+            top: {{ $position_y }}%;
+            max-width: 200px;
+            max-height: 100px;
+            transform: scale({{ $scale ?? 1 }});
+            transform-origin: top left;
         }
     </style>
 </head>
 <body>
-    @foreach($pages as $page)
+    @foreach($pages as $index => $page)
         <div class="page">
-            <img src="file://{{ $page }}" alt="Page {{ $loop->iteration }}">
+            <img src="{{ $page }}" class="page-image" alt="Page {{ $loop->iteration }}">
+            @if($index === 0)
+                <img src="{{ $signature }}" class="signature-image" alt="Signature">
+            @endif
         </div>
     @endforeach
 </body>

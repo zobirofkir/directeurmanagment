@@ -30,7 +30,8 @@
             padding: 5px;
             z-index: 1000;
             user-select: none;
-            transition: transform 0.2s;
+            transform-origin: center center;
+            background-color: rgba(255, 255, 255, 0.8);
         }
 
         .signature-preview:hover {
@@ -48,12 +49,16 @@
             height: calc(100vh - 140px);
             overflow: hidden;
             background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .document-frame {
             width: 100%;
             height: 100%;
             border: none;
+            pointer-events: none; /* Prevent iframe from capturing events */
         }
 
         .controls {
@@ -172,14 +177,15 @@
         let initialX;
         let initialY;
         let scale = 1;
-        let originalWidth = 0;
-        let originalHeight = 0;
+        let xOffset = 0;
+        let yOffset = 0;
 
         // Initialize signature position
         window.addEventListener('load', () => {
             const bounds = container.getBoundingClientRect();
-            signaturePreview.style.left = (bounds.width / 2 - signaturePreview.offsetWidth / 2) + 'px';
-            signaturePreview.style.top = (bounds.height / 2 - signaturePreview.offsetHeight / 2) + 'px';
+            const initialX = bounds.width / 2 - signaturePreview.offsetWidth / 2;
+            const initialY = bounds.height / 2 - signaturePreview.offsetHeight / 2;
+            setPosition(initialX, initialY);
             updatePositionInputs();
         });
 
@@ -197,11 +203,11 @@
 
         function dragStart(e) {
             if (e.type === 'touchstart') {
-                initialX = e.touches[0].clientX - signaturePreview.offsetLeft;
-                initialY = e.touches[0].clientY - signaturePreview.offsetTop;
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
             } else {
-                initialX = e.clientX - signaturePreview.offsetLeft;
-                initialY = e.clientY - signaturePreview.offsetTop;
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
             }
             isDragging = true;
             signaturePreview.classList.add('dragging');
@@ -211,6 +217,7 @@
             if (!isDragging) return;
             e.preventDefault();
 
+            let currentX, currentY;
             if (e.type === 'touchmove') {
                 currentX = e.touches[0].clientX - initialX;
                 currentY = e.touches[0].clientY - initialY;
@@ -220,8 +227,11 @@
             }
 
             const bounds = container.getBoundingClientRect();
-            currentX = Math.max(bounds.left, Math.min(bounds.right - signaturePreview.offsetWidth, currentX));
-            currentY = Math.max(bounds.top, Math.min(bounds.bottom - signaturePreview.offsetHeight, currentY));
+            const frameRect = documentFrame.getBoundingClientRect();
+
+            // Constrain movement to document frame
+            currentX = Math.max(frameRect.left, Math.min(frameRect.right - signaturePreview.offsetWidth, currentX));
+            currentY = Math.max(frameRect.top, Math.min(frameRect.bottom - signaturePreview.offsetHeight, currentY));
 
             setPosition(currentX, currentY);
             updatePositionInputs();
@@ -233,18 +243,23 @@
         }
 
         function setPosition(x, y) {
+            xOffset = x;
+            yOffset = y;
             signaturePreview.style.left = x + 'px';
             signaturePreview.style.top = y + 'px';
         }
 
         function updatePositionInputs() {
             const bounds = container.getBoundingClientRect();
-            const relativeX = parseFloat(signaturePreview.style.left) - bounds.left;
-            const relativeY = parseFloat(signaturePreview.style.top) - bounds.top;
+            const frameRect = documentFrame.getBoundingClientRect();
 
-            document.getElementById('position_x').value = relativeX;
-            document.getElementById('position_y').value = relativeY;
-            document.getElementById('scale_factor').value = scale;
+            // Calculate position relative to the document frame
+            const relativeX = (xOffset - frameRect.left) / frameRect.width * 100;
+            const relativeY = (yOffset - frameRect.top) / frameRect.height * 100;
+
+            document.getElementById('position_x').value = relativeX.toFixed(2);
+            document.getElementById('position_y').value = relativeY.toFixed(2);
+            document.getElementById('scale_factor').value = scale.toFixed(2);
         }
 
         function resetPosition() {
@@ -258,7 +273,18 @@
         }
 
         function adjustZoom(delta) {
+            const oldScale = scale;
             scale = Math.max(0.5, Math.min(2, scale + delta));
+
+            // Adjust position to maintain center point while scaling
+            const scaleRatio = scale / oldScale;
+            const centerX = xOffset + (signaturePreview.offsetWidth * oldScale) / 2;
+            const centerY = yOffset + (signaturePreview.offsetHeight * oldScale) / 2;
+
+            const newX = centerX - (signaturePreview.offsetWidth * scale) / 2;
+            const newY = centerY - (signaturePreview.offsetHeight * scale) / 2;
+
+            setPosition(newX, newY);
             signaturePreview.style.transform = `scale(${scale})`;
             updatePositionInputs();
         }
@@ -279,6 +305,17 @@
                 setPosition(parseFloat(signaturePreview.style.left), bounds.height - signaturePreview.offsetHeight);
             }
             updatePositionInputs();
+        });
+
+        // Add form submission handler
+        document.getElementById('signature-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Ensure positions are updated one final time before submission
+            updatePositionInputs();
+
+            // Submit the form
+            this.submit();
         });
     </script>
 </body>
