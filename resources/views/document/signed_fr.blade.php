@@ -20,6 +20,7 @@
             page-break-after: avoid;
         }
         .page img.page-image {
+            position: absolute;
             width: 100%;
             height: auto;
             display: block;
