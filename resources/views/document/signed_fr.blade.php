@@ -30,8 +30,9 @@
             top: {{ $position_y }}%;
             max-width: 200px;
             max-height: 100px;
-            transform: scale({{ $scale ?? 1 }});
+            transform: translate(0, 0) scale({{ $scale ?? 1 }});
             transform-origin: top left;
+            padding: 5px;
         }
     </style>
 </head>
