@@ -133,10 +133,6 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>Positionnez votre signature sur le document</h2>
-    </div>
-
     <div id="document-container">
         <img src="{{ $signature }}" id="signature-preview" class="signature-preview">
         <iframe src="{{ Storage::url($document->file_path) }}" id="document-frame" class="document-frame"></iframe>
