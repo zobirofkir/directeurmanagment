@@ -24,14 +24,15 @@
         .signature-preview {
             position: absolute;
             cursor: move;
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 200px; /* Limit initial signature size */
+            height: auto;
             border: 2px dashed #4CAF50;
             padding: 0;
             z-index: 1000;
             user-select: none;
             transform-origin: center center;
             background-color: rgba(255, 255, 255, 0.8);
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
         .signature-preview:hover {
@@ -41,14 +42,19 @@
         .signature-preview.dragging {
             opacity: 0.8;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-color: #2196F3;
+        }
+
+        .signature-preview.invalid-position {
+            border-color: #ff4444;
         }
 
         #document-container {
             position: relative;
             flex-grow: 1;
             height: calc(100vh - 140px);
-            overflow: hidden;
-            background: #fff;
+            overflow: auto; /* Changed from hidden to auto */
+            background: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -58,7 +64,8 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none; /* Prevent iframe from capturing events */
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         .controls {
@@ -74,6 +81,100 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .toolbar-btn {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .toolbar-btn.active {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        /* Add responsive styles */
+        @media (max-width: 768px) {
+            .controls {
+                padding: 10px;
+                bottom: 10px;
+            }
+
+            .toolbar {
+                top: 10px;
+                left: 10px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+
+            .zoom-controls {
+                right: 10px;
+            }
+        }
+
+        /* Add page guidelines */
+        .guideline {
+            position: absolute;
+            background: rgba(33, 150, 243, 0.3);
+            pointer-events: none;
+            display: none;
+        }
+
+        .guideline.visible {
+            display: block;
+        }
+
+        .guideline-h {
+            width: 100%;
+            height: 1px;
+        }
+
+        .guideline-v {
+            width: 1px;
+            height: 100%;
+        }
+
+        /* Add tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1003;
+            display: none;
         }
 
         .btn {
@@ -133,7 +234,22 @@
     </style>
 </head>
 <body>
+    <div class="toolbar">
+        <button class="toolbar-btn" onclick="toggleRotation()" title="Rotation libre">
+            <i class="fas fa-sync"></i>
+        </button>
+        <button class="toolbar-btn" onclick="toggleGuidelines()" title="Guides d'alignement">
+            <i class="fas fa-ruler-combined"></i>
+        </button>
+        <button class="toolbar-btn" onclick="toggleSnap()" title="Magnétisme">
+            <i class="fas fa-magnet"></i>
+        </button>
+    </div>
+
     <div id="document-container">
+        <div class="guideline guideline-h" id="guideline-h"></div>
+        <div class="guideline guideline-v" id="guideline-v"></div>
+        <div class="tooltip" id="position-tooltip"></div>
         <img src="{{ $signature }}" id="signature-preview" class="signature-preview">
         <iframe src="{{ Storage::url($document->file_path) }}" id="document-frame" class="document-frame"></iframe>
     </div>
@@ -175,6 +291,10 @@
         let scale = 1;
         let xOffset = 0;
         let yOffset = 0;
+        let rotation = 0;
+        let enableRotation = false;
+        let showGuidelines = false;
+        let enableSnap = false;
 
         // Initialize signature position
         window.addEventListener('load', () => {
@@ -225,14 +345,38 @@
             const bounds = container.getBoundingClientRect();
             const frameRect = documentFrame.getBoundingClientRect();
 
-            // Add padding to prevent signature from touching edges
-            const padding = 10;
-            currentX = Math.max(frameRect.left + padding,
-                              Math.min(frameRect.right - signaturePreview.offsetWidth - padding,
-                              currentX));
-            currentY = Math.max(frameRect.top + padding,
-                              Math.min(frameRect.bottom - signaturePreview.offsetHeight - padding,
-                              currentY));
+            // Add snapping logic
+            if (enableSnap) {
+                const snapThreshold = 10;
+                const centerX = frameRect.left + frameRect.width / 2;
+                const centerY = frameRect.top + frameRect.height / 2;
+
+                if (Math.abs(currentX + signaturePreview.offsetWidth / 2 - centerX) < snapThreshold) {
+                    currentX = centerX - signaturePreview.offsetWidth / 2;
+                }
+                if (Math.abs(currentY + signaturePreview.offsetHeight / 2 - centerY) < snapThreshold) {
+                    currentY = centerY - signaturePreview.offsetHeight / 2;
+                }
+            }
+
+            // Update guidelines
+            if (showGuidelines) {
+                const guidelineH = document.getElementById('guideline-h');
+                const guidelineV = document.getElementById('guideline-v');
+
+                guidelineH.style.top = (currentY + signaturePreview.offsetHeight / 2) + 'px';
+                guidelineV.style.left = (currentX + signaturePreview.offsetWidth / 2) + 'px';
+
+                guidelineH.classList.add('visible');
+                guidelineV.classList.add('visible');
+            }
+
+            // Update position tooltip
+            const tooltip = document.getElementById('position-tooltip');
+            tooltip.style.display = 'block';
+            tooltip.style.left = (currentX + signaturePreview.offsetWidth + 10) + 'px';
+            tooltip.style.top = currentY + 'px';
+            tooltip.textContent = `X: ${Math.round((currentX - frameRect.left) / frameRect.width * 100)}% Y: ${Math.round((currentY - frameRect.top) / frameRect.height * 100)}%`;
 
             setPosition(currentX, currentY);
             updatePositionInputs();
@@ -328,16 +472,44 @@
             }
         }, { passive: false });
 
-        // Ensure proper cleanup of event listeners
+        // Add rotation handling
+        document.addEventListener('keydown', function(e) {
+            if (enableRotation && e.key === 'r') {
+                rotation = (rotation + 90) % 360;
+                signaturePreview.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+            }
+        });
+
+        // Modify the cleanup function
         function cleanup() {
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', dragEnd);
             document.removeEventListener('touchmove', drag);
             document.removeEventListener('touchend', dragEnd);
+            const guidelineH = document.getElementById('guideline-h');
+            const guidelineV = document.getElementById('guideline-v');
+            if (guidelineH) guidelineH.classList.remove('visible');
+            if (guidelineV) guidelineV.classList.remove('visible');
         }
 
         // Add cleanup on page unload
         window.addEventListener('unload', cleanup);
+
+        // Add these new functions
+        function toggleRotation() {
+            enableRotation = !enableRotation;
+            document.querySelector('.toolbar-btn:nth-child(1)').classList.toggle('active');
+        }
+
+        function toggleGuidelines() {
+            showGuidelines = !showGuidelines;
+            document.querySelector('.toolbar-btn:nth-child(2)').classList.toggle('active');
+        }
+
+        function toggleSnap() {
+            enableSnap = !enableSnap;
+            document.querySelector('.toolbar-btn:nth-child(3)').classList.toggle('active');
+        }
     </script>
 </body>
 </html>
