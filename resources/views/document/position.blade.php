@@ -24,10 +24,10 @@
         .signature-preview {
             position: absolute;
             cursor: move;
-            max-width: 200px;
-            max-height: 100px;
+            max-width: 100%;
+            max-height: 100%;
             border: 2px dashed #4CAF50;
-            padding: 5px;
+            padding: 0;
             z-index: 1000;
             user-select: none;
             transform-origin: center center;
@@ -229,9 +229,14 @@
             const bounds = container.getBoundingClientRect();
             const frameRect = documentFrame.getBoundingClientRect();
 
-            // Constrain movement to document frame
-            currentX = Math.max(frameRect.left, Math.min(frameRect.right - signaturePreview.offsetWidth, currentX));
-            currentY = Math.max(frameRect.top, Math.min(frameRect.bottom - signaturePreview.offsetHeight, currentY));
+            // Add padding to prevent signature from touching edges
+            const padding = 10;
+            currentX = Math.max(frameRect.left + padding,
+                              Math.min(frameRect.right - signaturePreview.offsetWidth - padding,
+                              currentX));
+            currentY = Math.max(frameRect.top + padding,
+                              Math.min(frameRect.bottom - signaturePreview.offsetHeight - padding,
+                              currentY));
 
             setPosition(currentX, currentY);
             updatePositionInputs();
@@ -276,13 +281,15 @@
             const oldScale = scale;
             scale = Math.max(0.5, Math.min(2, scale + delta));
 
-            // Adjust position to maintain center point while scaling
-            const scaleRatio = scale / oldScale;
-            const centerX = xOffset + (signaturePreview.offsetWidth * oldScale) / 2;
-            const centerY = yOffset + (signaturePreview.offsetHeight * oldScale) / 2;
+            // Get the center point of the signature
+            const centerX = xOffset + (signaturePreview.offsetWidth / 2);
+            const centerY = yOffset + (signaturePreview.offsetHeight / 2);
 
-            const newX = centerX - (signaturePreview.offsetWidth * scale) / 2;
-            const newY = centerY - (signaturePreview.offsetHeight * scale) / 2;
+            // Calculate new position while maintaining the center point
+            const newWidth = signaturePreview.offsetWidth * scale;
+            const newHeight = signaturePreview.offsetHeight * scale;
+            const newX = centerX - (newWidth / 2);
+            const newY = centerY - (newHeight / 2);
 
             setPosition(newX, newY);
             signaturePreview.style.transform = `scale(${scale})`;
@@ -317,6 +324,24 @@
             // Submit the form
             this.submit();
         });
+
+        // Add touch event handlers
+        document.addEventListener('touchmove', function(e) {
+            if (isDragging) {
+                e.preventDefault(); // Prevent scrolling while dragging
+            }
+        }, { passive: false });
+
+        // Ensure proper cleanup of event listeners
+        function cleanup() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', dragEnd);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('touchend', dragEnd);
+        }
+
+        // Add cleanup on page unload
+        window.addEventListener('unload', cleanup);
     </script>
 </body>
 </html>
