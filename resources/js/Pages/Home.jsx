@@ -27,7 +27,7 @@ const Home = ({ error }) => {
 
   return (
     <Layout>
-        <Head title="login"/>
+        <Head title="BTISSAM"/>
       <div className="flex flex-col md:flex-row justify-center items-center h-screen bg-gray-100 p-4">
         <ToastContainer />
         <motion.div

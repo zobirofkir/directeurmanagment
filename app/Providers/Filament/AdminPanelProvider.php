@@ -120,6 +120,14 @@ class AdminPanelProvider extends PanelProvider
                         'DirecteurAdjoint',
                         'RHResponsableResourceHumaine'
                     ])),
+
+                NavigationItem::make()
+                    ->group('Scolarité')
+                    ->label('Scolarité')
+                    ->url('https://scolarite.btissam.ma')
+                    ->icon('heroicon-o-book-open')
+                    ->sort(100)
+                    ->openUrlInNewTab(),
             ]);
         });
 
