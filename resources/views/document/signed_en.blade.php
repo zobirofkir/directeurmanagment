@@ -32,6 +32,7 @@
             max-height: 100px;
             transform: scale({{ $scale ?? 1 }});
             transform-origin: top left;
+            z-index: 1000;
         }
     </style>
 </head>

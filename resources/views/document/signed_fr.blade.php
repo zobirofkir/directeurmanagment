@@ -5,35 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Signé</title>
     <style>
+        @page {
+            margin: 0;
+            padding: 0;
+            size: A4;
+        }
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            padding: 20px;
-            color: #333;
             margin: 0;
+            padding: 0;
         }
         .page {
             position: relative;
-            margin-bottom: 20px;
+            width: 210mm;
+            height: 297mm;
             page-break-after: always;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
         .page:last-child {
             page-break-after: avoid;
         }
         .page img.page-image {
             position: absolute;
-            width: 100%;
-            height: auto;
-            display: block;
+            top: 0;
+            left: 0;
+            width: 210mm;
+            height: 297mm;
+            object-fit: fill;
         }
         .signature-image {
             position: absolute;
-            left: {{ $position_x }}%;
-            top: {{ $position_y }}%;
-            max-width: 200px;
-            max-height: 100px;
-            transform: translate(-50%, -50%) scale({{ $scale ?? 1 }});
-            transform-origin: center center;
-            padding: 5px;
+            /* Convert percentage to pixels (1mm = 3.78px approximately) */
+            left: {{ $position_x * 2.1 }}mm;
+            top: {{ $position_y * 2.97 }}mm;
+            width: 40mm;
+            height: auto;
+            transform-origin: top left;
+            transform: scale({{ $scale ?? 1 }});
             z-index: 1000;
         }
     </style>

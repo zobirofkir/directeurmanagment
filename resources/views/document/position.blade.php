@@ -342,8 +342,12 @@
                 currentY = e.clientY - initialY;
             }
 
-            const bounds = container.getBoundingClientRect();
             const frameRect = documentFrame.getBoundingClientRect();
+            const signatureRect = signaturePreview.getBoundingClientRect();
+
+            // Constrain movement within the document frame
+            currentX = Math.max(frameRect.left, Math.min(frameRect.right - signatureRect.width, currentX));
+            currentY = Math.max(frameRect.top, Math.min(frameRect.bottom - signatureRect.height, currentY));
 
             // Add snapping logic
             if (enableSnap) {
@@ -351,11 +355,11 @@
                 const centerX = frameRect.left + frameRect.width / 2;
                 const centerY = frameRect.top + frameRect.height / 2;
 
-                if (Math.abs(currentX + signaturePreview.offsetWidth / 2 - centerX) < snapThreshold) {
-                    currentX = centerX - signaturePreview.offsetWidth / 2;
+                if (Math.abs(currentX + signatureRect.width / 2 - centerX) < snapThreshold) {
+                    currentX = centerX - signatureRect.width / 2;
                 }
-                if (Math.abs(currentY + signaturePreview.offsetHeight / 2 - centerY) < snapThreshold) {
-                    currentY = centerY - signaturePreview.offsetHeight / 2;
+                if (Math.abs(currentY + signatureRect.height / 2 - centerY) < snapThreshold) {
+                    currentY = centerY - signatureRect.height / 2;
                 }
             }
 
@@ -364,22 +368,39 @@
                 const guidelineH = document.getElementById('guideline-h');
                 const guidelineV = document.getElementById('guideline-v');
 
-                guidelineH.style.top = (currentY + signaturePreview.offsetHeight / 2) + 'px';
-                guidelineV.style.left = (currentX + signaturePreview.offsetWidth / 2) + 'px';
-
-                guidelineH.classList.add('visible');
-                guidelineV.classList.add('visible');
+                // Only show guidelines when inside the document frame
+                if (currentX >= frameRect.left &&
+                    currentX + signatureRect.width <= frameRect.right &&
+                    currentY >= frameRect.top &&
+                    currentY + signatureRect.height <= frameRect.bottom) {
+                    guidelineH.style.top = (currentY + signatureRect.height / 2) + 'px';
+                    guidelineV.style.left = (currentX + signatureRect.width / 2) + 'px';
+                    guidelineH.classList.add('visible');
+                    guidelineV.classList.add('visible');
+                } else {
+                    guidelineH.classList.remove('visible');
+                    guidelineV.classList.remove('visible');
+                }
             }
 
-            // Update position tooltip
+            // Only show tooltip and update position when inside document frame
             const tooltip = document.getElementById('position-tooltip');
-            tooltip.style.display = 'block';
-            tooltip.style.left = (currentX + signaturePreview.offsetWidth + 10) + 'px';
-            tooltip.style.top = currentY + 'px';
-            tooltip.textContent = `X: ${Math.round((currentX - frameRect.left) / frameRect.width * 100)}% Y: ${Math.round((currentY - frameRect.top) / frameRect.height * 100)}%`;
+            if (currentX >= frameRect.left &&
+                currentX + signatureRect.width <= frameRect.right &&
+                currentY >= frameRect.top &&
+                currentY + signatureRect.height <= frameRect.bottom) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = (currentX + signatureRect.width + 10) + 'px';
+                tooltip.style.top = currentY + 'px';
+                tooltip.textContent = `X: ${Math.round((currentX - frameRect.left) / frameRect.width * 100)}% Y: ${Math.round((currentY - frameRect.top) / frameRect.height * 100)}%`;
 
-            setPosition(currentX, currentY);
-            updatePositionInputs();
+                setPosition(currentX, currentY);
+                updatePositionInputs();
+                signaturePreview.classList.remove('invalid-position');
+            } else {
+                tooltip.style.display = 'none';
+                signaturePreview.classList.add('invalid-position');
+            }
         }
 
         function dragEnd() {
@@ -408,13 +429,14 @@
         }
 
         function resetPosition() {
-            const bounds = container.getBoundingClientRect();
+            const frameRect = documentFrame.getBoundingClientRect();
             setPosition(
-                bounds.width / 2 - signaturePreview.offsetWidth / 2,
-                bounds.height / 2 - signaturePreview.offsetHeight / 2
+                frameRect.left + (frameRect.width / 2 - signaturePreview.offsetWidth / 2),
+                frameRect.top + (frameRect.height / 2 - signaturePreview.offsetHeight / 2)
             );
             updatePositionInputs();
             resetZoom();
+            signaturePreview.classList.remove('invalid-position');
         }
 
         function adjustZoom(delta) {
